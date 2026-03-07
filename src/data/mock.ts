@@ -28,7 +28,10 @@ export interface Booking {
   carId: string;
   customerName: string;
   customerPhone: string;
+  customerYearOfBirth?: string;
   customerCCCD?: string;
+  customerCccdDate?: string; // Ngày cấp CCCD
+  customerCccdPlace?: string; // Nơi cấp CCCD
   customerAddress?: string;
   customerIdFront?: string; // Ảnh mặt trước CCCD
   customerIdBack?: string;  // Ảnh mặt sau CCCD

@@ -15,7 +15,10 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
   const [formData, setFormData] = useState<Partial<Booking>>({
     customerName: '',
     customerPhone: '',
+    customerYearOfBirth: '',
     customerCCCD: '',
+    customerCccdDate: '',
+    customerCccdPlace: 'Cục Cảnh sát QLHC về TTXH',
     customerAddress: '',
     carId: '',
     startDate: new Date().toISOString().slice(0, 16),
@@ -178,7 +181,7 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
                     placeholder="Họ và tên"
                   />
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-1 gap-4 md:gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Số điện thoại *</label>
                     <input
@@ -191,24 +194,62 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Số CCCD</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Năm sinh *</label>
                     <input
-                      type="text"
-                      value={formData.customerCCCD}
-                      onChange={e => setFormData({ ...formData, customerCCCD: e.target.value })}
+                      type="number"
+                      required
+                      value={formData.customerYearOfBirth}
+                      onChange={e => setFormData({ ...formData, customerYearOfBirth: e.target.value })}
                       className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                      placeholder="12 số CCCD"
+                      placeholder="VD: 1990"
                     />
                   </div>
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Địa chỉ</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Số CCCD *</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.customerCCCD}
+                    onChange={e => setFormData({ ...formData, customerCCCD: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    placeholder="Nhập 12 số CCCD"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Ngày cấp *</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.customerCccdDate}
+                      onChange={e => setFormData({ ...formData, customerCccdDate: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                      placeholder="VD: 15/05/2021"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Nơi cấp *</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.customerCccdPlace}
+                      onChange={e => setFormData({ ...formData, customerCccdPlace: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Địa chỉ thường trú</label>
                   <input
                     type="text"
                     value={formData.customerAddress}
                     onChange={e => setFormData({ ...formData, customerAddress: e.target.value })}
                     className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                    placeholder="Địa chỉ thường trú"
+                    placeholder="Số nhà, đường, Huyện/Quận, Tỉnh/TP"
                   />
                 </div>
 

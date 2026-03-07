@@ -51,7 +51,10 @@ export function mapDbToBooking(dbBooking: any): any {
         carId: dbBooking.car_id,
         customerName: dbBooking.customer_name,
         customerPhone: dbBooking.customer_phone,
+        customerYearOfBirth: dbBooking.customer_year_of_birth,
         customerCCCD: dbBooking.customer_cccd,
+        customerCccdDate: dbBooking.customer_cccd_date,
+        customerCccdPlace: dbBooking.customer_cccd_place,
         customerAddress: dbBooking.customer_address,
         startDate: dbBooking.start_date,
         endDate: dbBooking.end_date,
@@ -68,7 +71,10 @@ export function mapBookingToDb(booking: any): any {
     if (booking.carId !== undefined) { dbBooking.car_id = booking.carId; delete dbBooking.carId; }
     if (booking.customerName !== undefined) { dbBooking.customer_name = booking.customerName; delete dbBooking.customerName; }
     if (booking.customerPhone !== undefined) { dbBooking.customer_phone = booking.customerPhone; delete dbBooking.customerPhone; }
+    if (booking.customerYearOfBirth !== undefined) { dbBooking.customer_year_of_birth = booking.customerYearOfBirth; delete dbBooking.customerYearOfBirth; }
     if (booking.customerCCCD !== undefined) { dbBooking.customer_cccd = booking.customerCCCD; delete dbBooking.customerCCCD; }
+    if (booking.customerCccdDate !== undefined) { dbBooking.customer_cccd_date = booking.customerCccdDate; delete dbBooking.customerCccdDate; }
+    if (booking.customerCccdPlace !== undefined) { dbBooking.customer_cccd_place = booking.customerCccdPlace; delete dbBooking.customerCccdPlace; }
     if (booking.customerAddress !== undefined) { dbBooking.customer_address = booking.customerAddress; delete dbBooking.customerAddress; }
     if (booking.startDate !== undefined) { dbBooking.start_date = booking.startDate; delete dbBooking.startDate; }
     if (booking.endDate !== undefined) { dbBooking.end_date = booking.endDate; delete dbBooking.endDate; }
