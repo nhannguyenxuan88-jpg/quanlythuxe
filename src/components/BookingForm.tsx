@@ -46,7 +46,11 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
     customerLicenseExpiry: '',
     rentalPurpose: 'Du lịch - Công tác',
     paymentMethod: 'Chuyển khoản',
-    paymentDate: new Date().toLocaleDateString('vi-VN'),
+    paymentDate: (() => {
+      // Input type="date" requires YYYY-MM-DD format
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    })(),
     depositAmount: '15,000,000 VNĐ',
     contractLocation: '',
     carId: '',

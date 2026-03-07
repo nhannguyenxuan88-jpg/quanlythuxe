@@ -40,9 +40,13 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
   // Helper: format date string to dd/mm/yyyy
   const formatViDate = (dateStr?: string) => {
     if (!dateStr) return '....................';
-    // Already in dd/mm/yyyy format
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return dateStr;
-    // ISO yyyy-mm-dd or yyyy-mm-ddThh:mm
+    // If it looks like d/m/yyyy or dd/mm/yyyy (Vietnamese format)
+    const viDateMatch = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (viDateMatch) {
+      const [, day, month, year] = viDateMatch;
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    }
+    // Fallback for ISO yyyy-mm-dd or yyyy-mm-ddThh:mm
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
