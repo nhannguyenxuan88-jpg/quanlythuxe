@@ -94,3 +94,21 @@ insert into public.cars (id, plate, brand, model, year, status, price_per_day, i
   ('d88b4883-9366-4e12-b2fd-bd42f36ca55e', '51H-987.65', 'Honda', 'City', 2023, 'rented', 700000, 'https://picsum.photos/seed/city/400/300'),
   ('3b4d4a8e-5fa2-4217-a0f5-5a5fbc08e312', '43A-456.78', 'Mazda', '3', 2021, 'available', 800000, 'https://picsum.photos/seed/mazda3/400/300')
 on conflict (id) do nothing;
+
+-- ==========================================
+-- SUPABASE STORAGE (Lưu trữ hình ảnh)
+-- ==========================================
+insert into storage.buckets (id, name, public) values ('car_images', 'car_images', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Cho phép mọi người tải ảnh xe" on storage.objects;
+create policy "Cho phép mọi người tải ảnh xe" on storage.objects 
+  for insert with check ( bucket_id = 'car_images' );
+
+drop policy if exists "Cho phép mọi người xem ảnh xe" on storage.objects;
+create policy "Cho phép mọi người xem ảnh xe" on storage.objects 
+  for select using ( bucket_id = 'car_images' );
+  
+drop policy if exists "Cho phép quản trị xóa ảnh xe" on storage.objects;
+create policy "Cho phép quản trị xóa ảnh xe" on storage.objects 
+  for delete using ( bucket_id = 'car_images' );

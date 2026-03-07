@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Upload } from 'lucide-react';
 import { CarStatus } from '../data/mock';
+import { supabase } from '../lib/supabase';
+import { toast } from 'react-hot-toast';
 
 interface CarFormProps {
     isOpen: boolean;
@@ -27,6 +29,9 @@ interface CarFormProps {
 }
 
 export function CarForm({ isOpen, onClose, onSubmit }: CarFormProps) {
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+
     const [formData, setFormData] = useState({
         plate: '',
         brand: '',
@@ -49,13 +54,37 @@ export function CarForm({ isOpen, onClose, onSubmit }: CarFormProps) {
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        let finalImageUrl = formData.image;
+        if (imageFile) {
+            setIsUploading(true);
+            try {
+                const fileExt = imageFile.name.split('.').pop();
+                const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+                const { error: uploadError } = await supabase.storage
+                    .from('car_images')
+                    .upload(fileName, imageFile);
+
+                if (uploadError) throw uploadError;
+
+                const { data } = supabase.storage.from('car_images').getPublicUrl(fileName);
+                finalImageUrl = data.publicUrl;
+            } catch (error: any) {
+                toast.error('Lỗi tải ảnh lên: ' + error.message);
+                setIsUploading(false);
+                return;
+            }
+            setIsUploading(false);
+        }
+
         onSubmit({
             ...formData,
-            image: formData.image || `https://picsum.photos/seed/${formData.model || 'car'}/400/300`
+            image: finalImageUrl || `https://picsum.photos/seed/${formData.model || 'car'}/400/300`
         });
 
+        setImageFile(null);
         // Reset form after submission
         setFormData({
             plate: '',
@@ -214,15 +243,31 @@ export function CarForm({ isOpen, onClose, onSubmit }: CarFormProps) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-sm font-medium text-slate-700">Hình ảnh URL (Tùy chọn)</label>
-                            <input
-                                type="url"
-                                placeholder="https://example.com/image.jpg"
-                                value={formData.image}
-                                onChange={e => setFormData({ ...formData, image: e.target.value })}
-                                className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                            />
-                            <p className="text-xs text-slate-500">Nếu để trống, hệ thống sẽ tự tạo ảnh dựa trên dòng xe.</p>
+                            <label className="text-sm font-medium text-slate-700">Hình ảnh xe / Tải ảnh lên</label>
+                            <label className="w-full flex items-center justify-center border-2 border-dashed border-slate-300 rounded-xl p-4 md:p-6 cursor-pointer hover:border-indigo-500 hover:bg-slate-50 transition-colors">
+                                <span className="flex flex-col items-center gap-2 text-center">
+                                    <Upload className="text-slate-400" size={24} />
+                                    <span className="text-sm text-slate-600 px-2">
+                                        {imageFile ? imageFile.name : (formData.image ? 'Đã có ảnh (Click để tải ảnh khác)' : 'Bấm vào đây để chọn ảnh từ máy')}
+                                    </span>
+                                </span>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={e => {
+                                        if (e.target.files && e.target.files[0]) {
+                                            setImageFile(e.target.files[0]);
+                                        }
+                                    }}
+                                    className="hidden"
+                                />
+                            </label>
+                            {imageFile && (
+                                <div className="mt-2 w-full h-40 rounded-xl bg-slate-100 overflow-hidden relative border border-slate-200 shadow-sm">
+                                    <img src={URL.createObjectURL(imageFile)} alt="Preview" className="w-full h-full object-cover" />
+                                </div>
+                            )}
+                            <p className="text-xs text-slate-500 mt-1">Hỗ trợ các file ảnh (JPG, PNG). Nếu để trống, hệ thống sẽ tự tạo mẫu ngẫu nhiên.</p>
                         </div>
                     </form>
                 </div>
@@ -238,9 +283,15 @@ export function CarForm({ isOpen, onClose, onSubmit }: CarFormProps) {
                     <button
                         type="submit"
                         form="add-car-form"
-                        className="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors shadow-sm"
+                        disabled={isUploading}
+                        className="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
                     >
-                        Thêm xe
+                        {isUploading ? (
+                            <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                Đang tải...
+                            </>
+                        ) : 'Thêm xe'}
                     </button>
                 </div>
             </div>
