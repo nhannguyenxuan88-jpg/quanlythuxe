@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Booking, Car as CarType, BookingStatus } from '../data/mock';
-import { Plus, Search, Filter, Calendar as CalendarIcon, MoreVertical, Edit, Trash2, Printer, X, Image as ImageIcon, Download, ClipboardCheck, FileText } from 'lucide-react';
+import { Plus, Search, Filter, Calendar as CalendarIcon, MoreVertical, Edit, Trash2, Printer, X, Image as ImageIcon, Download, ClipboardCheck, FileText, MessageSquare } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { format, differenceInDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -510,15 +510,28 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                   <h4 className="font-semibold text-slate-700 flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Hợp Đồng Cho Thuê
                   </h4>
-                  <button
-                    onClick={() => {
-                      setPrintingBooking(viewingDocuments);
-                      setViewingDocuments(null);
-                    }}
-                    className="text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
-                  >
-                    <Printer size={16} /> Xem Bản in / Hợp đồng
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    {viewingDocuments.contractUrl && (
+                      <button
+                        onClick={() => {
+                          const message = `Gửi anh/chị bản điện tử Hợp đồng thuê xe: ${viewingDocuments.contractUrl}`;
+                          window.open(`https://zalo.me/?text=${encodeURIComponent(message)}`, '_blank');
+                        }}
+                        className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
+                      >
+                        <MessageSquare size={16} /> Gửi Zalo
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        setPrintingBooking(viewingDocuments);
+                        setViewingDocuments(null);
+                      }}
+                      className="text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
+                    >
+                      <Printer size={16} /> Xem Bản in
+                    </button>
+                  </div>
                 </div>
                 {viewingDocuments.contractUrl ? (
                   <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
