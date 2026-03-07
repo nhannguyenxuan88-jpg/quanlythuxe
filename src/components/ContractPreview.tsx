@@ -14,6 +14,9 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
   const signatureRef = useRef<SignatureCanvas>(null);
   const [signatureData, setSignatureData] = useState<string | null>(null);
 
+  const lessorSignatureRef = useRef<SignatureCanvas>(null);
+  const [lessorSignatureData, setLessorSignatureData] = useState<string | null>(null);
+
   const handleClearSignature = () => {
     signatureRef.current?.clear();
     setSignatureData(null);
@@ -22,6 +25,17 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
   const handleEndDrawing = () => {
     if (signatureRef.current) {
       setSignatureData(signatureRef.current.getTrimmedCanvas().toDataURL('image/png'));
+    }
+  };
+
+  const handleClearLessorSignature = () => {
+    lessorSignatureRef.current?.clear();
+    setLessorSignatureData(null);
+  };
+
+  const handleEndLessorDrawing = () => {
+    if (lessorSignatureRef.current) {
+      setLessorSignatureData(lessorSignatureRef.current.getTrimmedCanvas().toDataURL('image/png'));
     }
   };
 
@@ -147,11 +161,36 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
       </div>
 
       <div className="flex justify-between mt-12 pt-8">
-        <div className="text-center w-1/2">
+        <div className="text-center w-1/2 relative flex flex-col items-center">
           <p className="font-bold uppercase">BÊN CHO THUÊ</p>
-          <div className="h-40"></div>
+          <div className="h-40 w-full max-w-[250px] relative flex flex-col items-center justify-center border-b border-dashed border-gray-300 print:border-none my-2">
+            <div className="print:hidden w-full h-full cursor-crosshair touch-none select-none">
+              <SignatureCanvas
+                ref={lessorSignatureRef}
+                canvasProps={{ className: 'w-full h-full' }}
+                onEnd={handleEndLessorDrawing}
+              />
+            </div>
+            {/* When printing or has signature data, show the signed image to ensure print compatibility */}
+            {lessorSignatureData && (
+              <img src={lessorSignatureData} alt="Lessor Signature" className="absolute select-none pointer-events-none w-full h-full object-contain drop-shadow-sm opacity-0 print:opacity-100" />
+            )}
+            {!lessorSignatureData && <span className="absolute text-gray-300 select-none pointer-events-none text-xs print:hidden">(Chủ xe ký tại đây)</span>}
+          </div>
+          {/* Action button hidden during print */}
+          <div className="absolute top-10 -right-4 print:hidden">
+            <button
+              onClick={handleClearLessorSignature}
+              title="Xoá chữ ký"
+              className="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full transition-colors shadow-sm"
+              type="button"
+            >
+              <Eraser size={16} />
+            </button>
+          </div>
           <p className="font-bold">HOÀNG BÁ NGUYÊN</p>
         </div>
+
         <div className="text-center w-1/2 relative flex flex-col items-center">
           <p className="font-bold uppercase">BÊN THUÊ</p>
           <div className="h-40 w-full max-w-[250px] relative flex flex-col items-center justify-center border-b border-dashed border-gray-300 print:border-none my-2">
