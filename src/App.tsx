@@ -1,41 +1,125 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Toaster, toast } from 'react-hot-toast';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { CarList } from './components/CarList';
 import { BookingList } from './components/BookingList';
 import { CustomerList } from './components/CustomerList';
 import { BottomNav } from './components/BottomNav';
-import { initialCars, initialBookings, Car, Booking } from './data/mock';
+import { Car, Booking } from './data/mock';
+import { supabase, mapDbToCar, mapCarToDb, mapDbToBooking, mapBookingToDb } from './lib/supabase';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('dashboard');
-  const [cars, setCars] = useState<Car[]>(initialCars);
-  const [bookings, setBookings] = useState<Booking[]>(initialBookings);
+  const [cars, setCars] = useState<Car[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleAddCar = (car: Omit<Car, 'id'>) => {
-    const newCar = { ...car, id: `c${Date.now()}` };
-    setCars([...cars, newCar]);
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      const [carsRes, bookingsRes] = await Promise.all([
+        supabase.from('cars').select('*').order('created_at', { ascending: false }),
+        supabase.from('bookings').select('*').order('created_at', { ascending: false })
+      ]);
+
+      if (carsRes.error) throw carsRes.error;
+      if (bookingsRes.error) throw bookingsRes.error;
+
+      setCars(carsRes.data.map(mapDbToCar));
+      setBookings(bookingsRes.data.map(mapDbToBooking));
+    } catch (error: any) {
+      toast.error('Lỗi khi tải dữ liệu: ' + error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleUpdateCar = (id: string, updatedCar: Partial<Car>) => {
-    setCars(cars.map(c => c.id === id ? { ...c, ...updatedCar } : c));
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleAddCar = async (car: Omit<Car, 'id'>) => {
+    const loadingToast = toast.loading('Đang thêm xe...');
+    try {
+      const dbCar = mapCarToDb(car);
+      const { data, error } = await supabase.from('cars').insert([dbCar]).select().single();
+      if (error) throw error;
+      setCars([mapDbToCar(data), ...cars]);
+      toast.success('Thêm xe thành công', { id: loadingToast });
+    } catch (error: any) {
+      toast.error('Lỗi khi thêm xe: ' + error.message, { id: loadingToast });
+    }
   };
 
-  const handleDeleteCar = (id: string) => {
-    setCars(cars.filter(c => c.id !== id));
+  const handleUpdateCar = async (id: string, updatedCar: Partial<Car>) => {
+    const loadingToast = toast.loading('Đang cập nhật...');
+    try {
+      const dbUpdates = mapCarToDb(updatedCar);
+      dbUpdates.updated_at = new Date().toISOString();
+      const { data, error } = await supabase.from('cars').update(dbUpdates).eq('id', id).select().single();
+      if (error) throw error;
+      setCars(cars.map(c => c.id === id ? mapDbToCar(data) : c));
+      toast.success('Cập nhật thành công', { id: loadingToast });
+    } catch (error: any) {
+      toast.error('Lỗi khi cập nhật: ' + error.message, { id: loadingToast });
+    }
   };
 
-  const handleAddBooking = (booking: Omit<Booking, 'id'>) => {
-    const newBooking = { ...booking, id: `b${Date.now()}` };
-    setBookings([...bookings, newBooking]);
+  const handleDeleteCar = async (id: string) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa xe này?')) return;
+    const loadingToast = toast.loading('Đang xóa xe...');
+    try {
+      const { error } = await supabase.from('cars').delete().eq('id', id);
+      if (error) {
+        if (error.code === '23503') throw new Error('Không thể xóa xe đã có lịch sử thuê');
+        throw error;
+      }
+      setCars(cars.filter(c => c.id !== id));
+      toast.success('Xóa xe thành công', { id: loadingToast });
+    } catch (error: any) {
+      toast.error('Lỗi khi xóa: ' + error.message, { id: loadingToast });
+    }
   };
 
-  const handleUpdateBooking = (id: string, updatedBooking: Partial<Booking>) => {
-    setBookings(bookings.map(b => b.id === id ? { ...b, ...updatedBooking } : b));
+  const handleAddBooking = async (booking: Omit<Booking, 'id'>) => {
+    const loadingToast = toast.loading('Đang tạo đơn thuê...');
+    try {
+      const dbBooking = mapBookingToDb(booking);
+      const { data, error } = await supabase.from('bookings').insert([dbBooking]).select().single();
+      if (error) throw error;
+      setBookings([mapDbToBooking(data), ...bookings]);
+      toast.success('Tạo đơn thuê thành công', { id: loadingToast });
+    } catch (error: any) {
+      toast.error('Lỗi khi tạo đơn: ' + error.message, { id: loadingToast });
+    }
   };
 
-  const handleDeleteBooking = (id: string) => {
-    setBookings(bookings.filter(b => b.id !== id));
+  const handleUpdateBooking = async (id: string, updatedBooking: Partial<Booking>) => {
+    const loadingToast = toast.loading('Đang cập nhật đơn...');
+    try {
+      const dbUpdates = mapBookingToDb(updatedBooking);
+      dbUpdates.updated_at = new Date().toISOString();
+      const { data, error } = await supabase.from('bookings').update(dbUpdates).eq('id', id).select().single();
+      if (error) throw error;
+      setBookings(bookings.map(b => b.id === id ? mapDbToBooking(data) : b));
+      toast.success('Cập nhật đơn thành công', { id: loadingToast });
+    } catch (error: any) {
+      toast.error('Lỗi khi cập nhật đơn: ' + error.message, { id: loadingToast });
+    }
+  };
+
+  const handleDeleteBooking = async (id: string) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa đơn thuê này?')) return;
+    const loadingToast = toast.loading('Đang xóa đơn...');
+    try {
+      const { error } = await supabase.from('bookings').delete().eq('id', id);
+      if (error) throw error;
+      setBookings(bookings.filter(b => b.id !== id));
+      toast.success('Xóa đơn thành công', { id: loadingToast });
+    } catch (error: any) {
+      toast.error('Lỗi khi xóa: ' + error.message, { id: loadingToast });
+    }
   };
 
   const renderContent = () => {
@@ -76,11 +160,18 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans overflow-hidden print:h-auto print:overflow-visible print:bg-white">
+      <Toaster position="top-right" />
       <Sidebar currentView={currentView} onViewChange={setCurrentView} />
       {/* Reduced padding on mobile, added pb-20 to account for bottom nav */}
       <main className="flex-1 overflow-y-auto p-4 pb-24 md:pb-8 md:p-8 print:p-0 print:overflow-visible relative">
         <div className="max-w-7xl mx-auto print:max-w-none">
-          {renderContent()}
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full min-h-[50vh]">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            </div>
+          ) : (
+            renderContent()
+          )}
         </div>
       </main>
       <BottomNav currentView={currentView} onViewChange={setCurrentView} />
