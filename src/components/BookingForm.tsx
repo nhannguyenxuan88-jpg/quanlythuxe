@@ -518,7 +518,7 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
                     className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-white transition-all"
                   >
                     <option value="">-- Chọn xe --</option>
-                    {cars.filter(c => c.status === 'available').map(car => (
+                    {cars.filter(c => c.status === 'available' || c.id === formData.carId).map(car => (
                       <option key={car.id} value={car.id}>
                         {car.plate} - {car.brand} {car.model} ({new Intl.NumberFormat('vi-VN').format(car.pricePerDay)}đ/ngày)
                       </option>
