@@ -137,7 +137,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
 
         <div className="font-bold mt-4">Điều 4: Giá thuê và phương thức thanh toán</div>
         <p>1. Giá thuê tài sản nêu trên là: <strong>{booking.totalAmount ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(booking.totalAmount) : '......................'}</strong></p>
-        <p>2. Phương thức thanh toán: Thanh toán bằng <strong>{booking.paymentMethod || '........................'}</strong> và Bên B phải thanh toán cho Bên A số tiền thuê xe ô tô nêu trên vào ngày <strong>{booking.paymentDate || '........................'}</strong></p>
+        <p>2. Phương thức thanh toán: Thanh toán bằng <strong>{booking.paymentMethod || '........................'}</strong> và Bên B phải thanh toán cho Bên A số tiền thuê xe ô tô nêu trên vào ngày <strong>{formatViDate(booking.paymentDate)}</strong></p>
         <p>3. Việc giao và nhận số tiền nêu trên do hai bên tự thực hiện và chịu trách nhiệm trước pháp luật.</p>
         <p>4. Bên B cọc là <strong>{booking.depositAmount || '......................'}</strong> thế chấp, Bên A phải hoàn trả số tiền này ngay khi nhận lại xe.</p>
 
