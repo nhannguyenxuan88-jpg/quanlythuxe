@@ -1,12 +1,14 @@
-import { Car, LayoutDashboard, CalendarDays, Users, Settings } from 'lucide-react';
+import { Car, LayoutDashboard, CalendarDays, Users, Settings, LogOut } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface SidebarProps {
   currentView: string;
   onViewChange: (view: string) => void;
+  userEmail?: string;
+  onLogout?: () => void;
 }
 
-export function Sidebar({ currentView, onViewChange }: SidebarProps) {
+export function Sidebar({ currentView, onViewChange, userEmail, onLogout }: SidebarProps) {
   const navItems = [
     { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },
     { id: 'cars', label: 'Quản lý xe', icon: Car },
@@ -14,6 +16,9 @@ export function Sidebar({ currentView, onViewChange }: SidebarProps) {
     { id: 'customers', label: 'Khách hàng', icon: Users },
     { id: 'settings', label: 'Cài đặt', icon: Settings },
   ];
+
+  const displayName = userEmail?.split('@')[0] || 'Admin';
+  const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
     <div className="w-64 bg-slate-900 text-slate-300 flex-col h-screen shrink-0 print:hidden hidden md:flex">
@@ -46,13 +51,22 @@ export function Sidebar({ currentView, onViewChange }: SidebarProps) {
       </nav>
       <div className="p-4 border-t border-slate-800">
         <div className="flex items-center gap-3 px-4 py-2">
-          <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-medium text-white">
-            AD
+          <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-medium text-white shrink-0">
+            {initials}
           </div>
-          <div>
-            <p className="text-sm font-medium text-white">Admin</p>
-            <p className="text-xs text-slate-500">admin@autorent.vn</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-white truncate">{displayName}</p>
+            <p className="text-xs text-slate-500 truncate">{userEmail}</p>
           </div>
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="p-1.5 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-rose-400"
+              title="Đăng xuất"
+            >
+              <LogOut size={16} />
+            </button>
+          )}
         </div>
       </div>
     </div>

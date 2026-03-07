@@ -95,12 +95,11 @@ create trigger handle_updated_at_bookings
 alter table public.cars enable row level security;
 alter table public.bookings enable row level security;
 
--- Thiết lập Policies (Phân quyền cơ bản: Cho phép đọc/ghi đối với tất cả)
--- (Nếu có hệ thống Auth đăng nhập, hãy đổi `true` thành `auth.role() = 'authenticated'`)
+-- Thiết lập Policies (Bảo mật: Chỉ cho phép user đã đăng nhập)
 drop policy if exists "Cho phép tất cả thao tác trên Cars" on public.cars;
-create policy "Cho phép tất cả thao tác trên Cars" on public.cars for all using (true);
+create policy "Cho phép tất cả thao tác trên Cars" on public.cars for all using (auth.role() = 'authenticated');
 drop policy if exists "Cho phép tất cả thao tác trên Bookings" on public.bookings;
-create policy "Cho phép tất cả thao tác trên Bookings" on public.bookings for all using (true);
+create policy "Cho phép tất cả thao tác trên Bookings" on public.bookings for all using (auth.role() = 'authenticated');
 
 -- ==========================================
 -- DỮ LIỆU MẪU (Bỏ qua nếu chỉ cần tạo bảng)
@@ -158,10 +157,10 @@ create table if not exists public.settings (
 alter table public.settings enable row level security;
 
 drop policy if exists "Cho phép đọc settings" on public.settings;
-create policy "Cho phép đọc settings" on public.settings for select using (true);
+create policy "Cho phép đọc settings" on public.settings for select using (auth.role() = 'authenticated');
 
 drop policy if exists "Cho phép ghi settings" on public.settings;
-create policy "Cho phép ghi settings" on public.settings for insert with check (true);
+create policy "Cho phép ghi settings" on public.settings for insert with check (auth.role() = 'authenticated');
 
 drop policy if exists "Cho phép sửa settings" on public.settings;
-create policy "Cho phép sửa settings" on public.settings for update using (true);
+create policy "Cho phép sửa settings" on public.settings for update using (auth.role() = 'authenticated');

@@ -7,14 +7,30 @@ import { BookingList } from './components/BookingList';
 import { CustomerList } from './components/CustomerList';
 import { Settings } from './components/Settings';
 import { BottomNav } from './components/BottomNav';
+import { LoginPage } from './components/LoginPage';
 import { Car, Booking } from './data/mock';
 import { supabase, mapDbToCar, mapCarToDb, mapDbToBooking, mapBookingToDb } from './lib/supabase';
+import type { Session } from '@supabase/supabase-js';
 
 export default function App() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [currentView, setCurrentView] = useState('dashboard');
   const [cars, setCars] = useState<Car[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Auth listener
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setAuthLoading(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -212,10 +228,32 @@ export default function App() {
     }
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success('Đã đăng xuất');
+  };
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <>
+        <Toaster position="top-right" />
+        <LoginPage />
+      </>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-slate-50 font-sans overflow-hidden print:block print:h-auto print:overflow-visible print:bg-white">
       <Toaster position="top-right" />
-      <Sidebar currentView={currentView} onViewChange={setCurrentView} />
+      <Sidebar currentView={currentView} onViewChange={setCurrentView} userEmail={session.user.email} onLogout={handleLogout} />
       {/* Reduced padding on mobile, added pb-20 to account for bottom nav */}
       <main className="flex-1 overflow-y-auto p-4 pb-24 md:pb-8 md:p-8 print:block print:p-0 print:overflow-visible relative">
         <div className="max-w-7xl mx-auto print:max-w-none">
