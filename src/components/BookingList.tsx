@@ -19,6 +19,7 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all');
   const [isAdding, setIsAdding] = useState(false);
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [printingBooking, setPrintingBooking] = useState<Booking | null>(null);
   const [viewingDocuments, setViewingDocuments] = useState<Booking | null>(null);
 
@@ -184,7 +185,10 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                         >
                           <Printer size={18} />
                         </button>
-                        <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+                        <button
+                          onClick={() => setEditingBooking(booking)}
+                          className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        >
                           <Edit size={18} />
                         </button>
                         <button
@@ -281,7 +285,10 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                       >
                         <Printer size={18} />
                       </button>
-                      <button className="min-w-[40px] w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm">
+                      <button
+                        onClick={() => setEditingBooking(booking)}
+                        className="min-w-[40px] w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm"
+                      >
                         <Edit size={18} />
                       </button>
                       <button
@@ -312,6 +319,18 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
             setIsAdding(false);
           }}
           onCancel={() => setIsAdding(false)}
+        />
+      )}
+
+      {editingBooking && (
+        <BookingForm
+          cars={cars}
+          initialData={editingBooking}
+          onSave={(booking) => {
+            onUpdateBooking(editingBooking.id, booking);
+            setEditingBooking(null);
+          }}
+          onCancel={() => setEditingBooking(null)}
         />
       )}
 

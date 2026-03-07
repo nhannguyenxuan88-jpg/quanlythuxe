@@ -15,6 +15,7 @@ export function CarList({ cars, onAddCar, onUpdateCar, onDeleteCar }: CarListPro
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<CarStatus | 'all'>('all');
   const [isAdding, setIsAdding] = useState(false);
+  const [editingCar, setEditingCar] = useState<CarType | null>(null);
 
   const filteredCars = cars.filter(car => {
     const matchesSearch = car.plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -136,7 +137,10 @@ export function CarList({ cars, onAddCar, onUpdateCar, onDeleteCar }: CarListPro
                   </td>
                   <td className="p-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+                      <button
+                        onClick={() => setEditingCar(car)}
+                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                      >
                         <Edit size={18} />
                       </button>
                       <button
@@ -177,7 +181,10 @@ export function CarList({ cars, onAddCar, onUpdateCar, onDeleteCar }: CarListPro
                         <p className="text-sm text-slate-500 mt-0.5">{car.year}</p>
                       </div>
                       <div className="flex gap-1 shrink-0">
-                        <button className="p-1.5 text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 rounded-lg transition-colors">
+                        <button
+                          onClick={() => setEditingCar(car)}
+                          className="p-1.5 text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 rounded-lg transition-colors"
+                        >
                           <Edit size={16} />
                         </button>
                         <button
@@ -233,6 +240,18 @@ export function CarList({ cars, onAddCar, onUpdateCar, onDeleteCar }: CarListPro
           setIsAdding(false);
         }}
       />
+
+      {editingCar && (
+        <CarForm
+          isOpen={true}
+          onClose={() => setEditingCar(null)}
+          initialData={editingCar}
+          onSubmit={car => {
+            onUpdateCar(editingCar.id, car);
+            setEditingCar(null);
+          }}
+        />
+      )}
     </div>
   );
 }

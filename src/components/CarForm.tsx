@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Upload } from 'lucide-react';
 import { CarStatus } from '../data/mock';
 import { supabase } from '../lib/supabase';
@@ -15,24 +15,43 @@ interface CarFormProps {
         pricePerDay: number;
         status: CarStatus;
         image: string;
-        type?: string;          // Loại xe (VD: Ô TÔ con)
-        color?: string;         // Màu sơn
-        engineNumber?: string;  // Số máy
-        frameNumber?: string;   // Số khung
-        seats?: number;         // Số chỗ ngồi
-        ownerName?: string;     // Tên chủ xe
-        ownerAddress?: string;  // Địa chỉ chủ xe
-        inspectionNumber?: string; // Số đăng kiểm
-        inspectionProvider?: string; // Cơ quan đăng kiểm
-        inspectionDate?: string;     // Ngày cấp đăng kiểm
+        type?: string;
+        color?: string;
+        engineNumber?: string;
+        frameNumber?: string;
+        seats?: number;
+        ownerName?: string;
+        ownerAddress?: string;
+        inspectionNumber?: string;
+        inspectionProvider?: string;
+        inspectionDate?: string;
     }) => void;
+    initialData?: {
+        plate: string;
+        brand: string;
+        model: string;
+        year: number;
+        pricePerDay: number;
+        status: CarStatus;
+        image: string;
+        type?: string;
+        color?: string;
+        engineNumber?: string;
+        frameNumber?: string;
+        seats?: number;
+        ownerName?: string;
+        ownerAddress?: string;
+        inspectionNumber?: string;
+        inspectionProvider?: string;
+        inspectionDate?: string;
+    };
 }
 
-export function CarForm({ isOpen, onClose, onSubmit }: CarFormProps) {
+export function CarForm({ isOpen, onClose, onSubmit, initialData }: CarFormProps) {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
 
-    const [formData, setFormData] = useState({
+    const defaultData = {
         plate: '',
         brand: '',
         model: '',
@@ -50,7 +69,35 @@ export function CarForm({ isOpen, onClose, onSubmit }: CarFormProps) {
         inspectionNumber: '',
         inspectionProvider: '',
         inspectionDate: '',
-    });
+    };
+
+    const [formData, setFormData] = useState(defaultData);
+
+    useEffect(() => {
+        if (initialData) {
+            setFormData({
+                plate: initialData.plate || '',
+                brand: initialData.brand || '',
+                model: initialData.model || '',
+                year: initialData.year || new Date().getFullYear(),
+                pricePerDay: initialData.pricePerDay || 0,
+                status: initialData.status || 'available',
+                image: initialData.image || '',
+                type: initialData.type || 'Ô TÔ con',
+                color: initialData.color || '',
+                engineNumber: initialData.engineNumber || '',
+                frameNumber: initialData.frameNumber || '',
+                seats: initialData.seats || 7,
+                ownerName: initialData.ownerName || '',
+                ownerAddress: initialData.ownerAddress || '',
+                inspectionNumber: initialData.inspectionNumber || '',
+                inspectionProvider: initialData.inspectionProvider || '',
+                inspectionDate: initialData.inspectionDate || '',
+            });
+        } else {
+            setFormData(defaultData);
+        }
+    }, [initialData]);
 
     if (!isOpen) return null;
 
@@ -111,7 +158,7 @@ export function CarForm({ isOpen, onClose, onSubmit }: CarFormProps) {
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
-                    <h2 className="text-lg font-semibold text-slate-800">Thêm xe mới</h2>
+                    <h2 className="text-lg font-semibold text-slate-800">{initialData ? 'Cập nhật xe' : 'Thêm xe mới'}</h2>
                     <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors">
                         <X size={20} />
                     </button>

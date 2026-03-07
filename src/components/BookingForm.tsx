@@ -9,10 +9,11 @@ interface BookingFormProps {
   cars: Car[];
   onSave: (booking: Omit<Booking, 'id'>) => void;
   onCancel: () => void;
+  initialData?: Partial<Booking>;
 }
 
-export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
-  const [formData, setFormData] = useState<Partial<Booking>>({
+export function BookingForm({ cars, onSave, onCancel, initialData }: BookingFormProps) {
+  const [formData, setFormData] = useState<Partial<Booking>>(() => initialData ? { ...initialData } : {
     customerName: '',
     customerPhone: '',
     customerYearOfBirth: '',
@@ -35,7 +36,7 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
     totalAmount: 0,
   });
 
-  const [idFiles, setIdFiles] = useState<{ front?: File, back?: File }>({});
+  const [idFiles, setIdFiles] = useState<{ front?: File; back?: File; licenseFront?: File; licenseBack?: File }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const contractRef = useRef<HTMLDivElement>(null);
 
