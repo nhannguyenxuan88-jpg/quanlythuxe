@@ -73,6 +73,18 @@ export function mapDbToBooking(dbBooking: any): any {
         customerLicenseFront: dbBooking.customer_license_front,
         customerLicenseBack: dbBooking.customer_license_back,
         contractUrl: dbBooking.contract_url,
+
+        checkOutTime: dbBooking.check_out_time,
+        checkOutOdo: dbBooking.check_out_odo,
+        checkOutFuel: dbBooking.check_out_fuel,
+        checkOutNotes: dbBooking.check_out_notes,
+        checkOutImages: dbBooking.check_out_images || [],
+
+        checkInTime: dbBooking.check_in_time,
+        checkInOdo: dbBooking.check_in_odo,
+        checkInFuel: dbBooking.check_in_fuel,
+        checkInNotes: dbBooking.check_in_notes,
+        checkInImages: dbBooking.check_in_images || [],
     };
 }
 
@@ -102,6 +114,18 @@ export function mapBookingToDb(booking: any): any {
     if (booking.customerLicenseFront !== undefined) { dbBooking.customer_license_front = booking.customerLicenseFront; delete dbBooking.customerLicenseFront; }
     if (booking.customerLicenseBack !== undefined) { dbBooking.customer_license_back = booking.customerLicenseBack; delete dbBooking.customerLicenseBack; }
     if (booking.contractUrl !== undefined) { dbBooking.contract_url = booking.contractUrl; delete dbBooking.contractUrl; }
+
+    if (booking.checkOutTime !== undefined) { dbBooking.check_out_time = booking.checkOutTime; delete dbBooking.checkOutTime; }
+    if (booking.checkOutOdo !== undefined) { dbBooking.check_out_odo = booking.checkOutOdo; delete dbBooking.checkOutOdo; }
+    if (booking.checkOutFuel !== undefined) { dbBooking.check_out_fuel = booking.checkOutFuel; delete dbBooking.checkOutFuel; }
+    if (booking.checkOutNotes !== undefined) { dbBooking.check_out_notes = booking.checkOutNotes; delete dbBooking.checkOutNotes; }
+    if (booking.checkOutImages !== undefined) { dbBooking.check_out_images = booking.checkOutImages; delete dbBooking.checkOutImages; }
+
+    if (booking.checkInTime !== undefined) { dbBooking.check_in_time = booking.checkInTime; delete dbBooking.checkInTime; }
+    if (booking.checkInOdo !== undefined) { dbBooking.check_in_odo = booking.checkInOdo; delete dbBooking.checkInOdo; }
+    if (booking.checkInFuel !== undefined) { dbBooking.check_in_fuel = booking.checkInFuel; delete dbBooking.checkInFuel; }
+    if (booking.checkInNotes !== undefined) { dbBooking.check_in_notes = booking.checkInNotes; delete dbBooking.checkInNotes; }
+    if (booking.checkInImages !== undefined) { dbBooking.check_in_images = booking.checkInImages; delete dbBooking.checkInImages; }
 
     // Strip blob: URLs (temporary local previews) - they can't be stored and cause errors
     for (const key of Object.keys(dbBooking)) {

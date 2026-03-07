@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Booking, Car as CarType, BookingStatus } from '../data/mock';
-import { Plus, Search, Filter, Calendar as CalendarIcon, MoreVertical, Edit, Trash2, Printer, X, Image as ImageIcon, Download } from 'lucide-react';
+import { Plus, Search, Filter, Calendar as CalendarIcon, MoreVertical, Edit, Trash2, Printer, X, Image as ImageIcon, Download, ClipboardCheck } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { format, differenceInDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { BookingForm } from './BookingForm';
 import { ContractPreview } from './ContractPreview';
+import { HandoverModal } from './HandoverModal';
 
 interface BookingListProps {
   bookings: Booking[];
@@ -24,6 +25,7 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [printingBooking, setPrintingBooking] = useState<Booking | null>(null);
   const [viewingDocuments, setViewingDocuments] = useState<Booking | null>(null);
+  const [handoverBooking, setHandoverBooking] = useState<{ booking: Booking, type: 'checkout' | 'checkin' } | null>(null);
 
   const filteredBookings = bookings.filter(booking => {
     const car = cars.find(c => c.id === booking.carId);
@@ -245,35 +247,60 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                       </select>
                     </td>
                     <td className="p-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {hasDocs && (
+                      <div className="flex flex-col gap-1 items-end">
+                        {/* Handover Status / Buttons */}
+                        {booking.status === 'active' && !booking.checkOutTime && (
                           <button
-                            onClick={() => setViewingDocuments(booking)}
-                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                            title="Xem tài liệu đính kèm"
+                            onClick={() => setHandoverBooking({ booking, type: 'checkout' })}
+                            className="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 px-2 py-1 flex items-center gap-1 rounded font-medium border border-amber-200 transition-colors w-full justify-center"
                           >
-                            <ImageIcon size={18} />
+                            <ClipboardCheck size={14} /> Giao xe
                           </button>
                         )}
-                        <button
-                          onClick={() => handlePrintExisting(booking)}
-                          className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                          title="In hợp đồng"
-                        >
-                          <Printer size={18} />
-                        </button>
-                        <button
-                          onClick={() => setEditingBooking(booking)}
-                          className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                        >
-                          <Edit size={18} />
-                        </button>
-                        <button
-                          onClick={() => onDeleteBooking(booking.id)}
-                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        {booking.status === 'active' && booking.checkOutTime && !booking.checkInTime && (
+                          <button
+                            onClick={() => setHandoverBooking({ booking, type: 'checkin' })}
+                            className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2 py-1 flex items-center gap-1 rounded font-medium border border-indigo-200 transition-colors w-full justify-center"
+                          >
+                            <ClipboardCheck size={14} /> Nhận xe
+                          </button>
+                        )}
+                        {(booking.checkOutTime || booking.checkInTime) && (
+                          <span className="text-[10px] text-slate-500 font-medium">
+                            {booking.checkInTime ? 'Đã nhận xe' : 'Đã giao xe'}
+                          </span>
+                        )}
+
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
+                          {(hasDocs || booking.checkOutTime) && (
+                            <button
+                              onClick={() => setViewingDocuments(booking)}
+                              className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:text-indigo-600"
+                              title="Xem tài liệu & Biên bản"
+                            >
+                              <ImageIcon size={18} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handlePrintExisting(booking)}
+                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            title="In hợp đồng"
+                          >
+                            <Printer size={18} />
+                          </button>
+                          <button
+                            onClick={() => setEditingBooking(booking)}
+                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                          >
+                            <Edit size={18} />
+                          </button>
+                          <button
+                            onClick={() => onDeleteBooking(booking.id)}
+                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -507,6 +534,19 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
             car={cars.find(c => c.id === printingBooking.carId)}
           />
         </div>
+      )}
+      {/* Handover Modal */}
+      {handoverBooking && (
+        <HandoverModal
+          booking={handoverBooking.booking}
+          car={cars.find(c => c.id === handoverBooking.booking.carId)!}
+          type={handoverBooking.type}
+          onClose={() => setHandoverBooking(null)}
+          onSuccess={(updated) => {
+            onUpdateBooking(updated.id, updated);
+            setHandoverBooking(null);
+          }}
+        />
       )}
     </div>
   );

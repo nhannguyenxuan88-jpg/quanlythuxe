@@ -46,6 +46,20 @@ export interface Booking {
   customerLicenseFront?: string; // Ảnh mặt trước GPLX
   customerLicenseBack?: string;  // Ảnh mặt sau GPLX
   contractUrl?: string;     // Link lưu trữ bản sao Hợp Đồng (Ảnh/PDF)
+
+  // Handover (Bàn giao xe)
+  checkOutTime?: string;
+  checkOutOdo?: number;
+  checkOutFuel?: string;
+  checkOutNotes?: string;
+  checkOutImages?: string[]; // Array of image URLs
+
+  checkInTime?: string;
+  checkInOdo?: number;
+  checkInFuel?: string;
+  checkInNotes?: string;
+  checkInImages?: string[]; // Array of image URLs
+
   startDate: string;
   endDate: string;
   totalAmount: number;

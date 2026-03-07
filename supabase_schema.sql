@@ -62,6 +62,21 @@ create table if not exists public.bookings (
     customer_license_front text, -- Ảnh mặt trước GPLX
     customer_license_back text, -- Ảnh mặt sau GPLX
     contract_url text, -- Link lưu trữ bản sao Hợp Đồng (Ảnh/PDF)
+    
+    -- Check-out (Lúc Giao Xe)
+    check_out_time timestamp with time zone,
+    check_out_odo integer,
+    check_out_fuel text,
+    check_out_notes text,
+    check_out_images jsonb,
+    
+    -- Check-in (Lúc Nhận Lại Xe)
+    check_in_time timestamp with time zone,
+    check_in_odo integer,
+    check_in_fuel text,
+    check_in_notes text,
+    check_in_images jsonb,
+
     start_date timestamp with time zone not null,
     end_date timestamp with time zone not null,
     total_amount numeric not null,
