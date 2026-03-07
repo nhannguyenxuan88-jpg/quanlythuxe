@@ -13,13 +13,19 @@ interface BookingFormProps {
 }
 
 export function BookingForm({ cars, onSave, onCancel, initialData }: BookingFormProps) {
-  // Normalize date string to datetime-local format (yyyy-MM-ddTHH:mm)
+  // Normalize date string to datetime-local format (yyyy-MM-ddTHH:mm) in LOCAL timezone
   const toDatetimeLocal = (dateStr?: string) => {
     if (!dateStr) return '';
     try {
       const d = new Date(dateStr);
       if (isNaN(d.getTime())) return dateStr;
-      return d.toISOString().slice(0, 16);
+      // Extract local time parts
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
     } catch { return dateStr; }
   };
 
@@ -44,8 +50,8 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
     depositAmount: '15,000,000 VNĐ',
     contractLocation: '',
     carId: '',
-    startDate: new Date().toISOString().slice(0, 16),
-    endDate: new Date(Date.now() + 86400000).toISOString().slice(0, 16),
+    startDate: toDatetimeLocal(new Date().toString()),
+    endDate: toDatetimeLocal(new Date(Date.now() + 86400000).toString()),
     status: 'active',
     totalAmount: 0,
   });
@@ -166,8 +172,13 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
       }
 
       // Save complete booking data
+      const finalStartDate = formData.startDate ? new Date(formData.startDate).toISOString() : '';
+      const finalEndDate = formData.endDate ? new Date(formData.endDate).toISOString() : '';
+
       onSave({
         ...formData,
+        startDate: finalStartDate,
+        endDate: finalEndDate,
         customerIdFront: customerIdFrontUrl,
         customerIdBack: customerIdBackUrl,
         customerLicenseFront: customerLicenseFrontUrl,
