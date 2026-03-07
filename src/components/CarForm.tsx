@@ -108,7 +108,7 @@ export function CarForm({ isOpen, onClose, onSubmit }: CarFormProps) {
     };
 
     return (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
                     <h2 className="text-lg font-semibold text-slate-800">Thêm xe mới</h2>

@@ -11,7 +11,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
   const today = new Date();
 
   return (
-    <div ref={ref} className="bg-white p-8 text-black max-w-4xl mx-auto print:p-0 print:m-0 text-sm leading-relaxed" style={{ fontFamily: '"Times New Roman", Times, serif' }}>
+    <div ref={ref} className="bg-white p-4 sm:p-8 text-black max-w-4xl mx-auto print:p-0 print:m-0 text-sm leading-relaxed" style={{ fontFamily: '"Times New Roman", Times, serif' }}>
       <div className="text-center mb-6 relative">
         <h2 className="font-bold text-lg uppercase">Cộng Hòa Xã Hội Chủ Nghĩa Việt Nam</h2>
         <h3 className="font-bold text-base underline">Độc lập – Tự do – Hạnh phúc</h3>
