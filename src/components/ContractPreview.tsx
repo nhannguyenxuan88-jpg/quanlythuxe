@@ -49,7 +49,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
       <h1 className="text-xl font-bold text-center uppercase mb-6">HỢP ĐỒNG THUÊ XE (KHÔNG BAO GỒM TÀI)</h1>
 
       <div className="space-y-4 text-justify">
-        <p>Hôm nay, ngày {today.getDate()} tháng {today.getMonth() + 1} năm {today.getFullYear()}, tại ..........................................., chúng tôi gồm:</p>
+        <p>Hôm nay, ngày {today.getDate()} tháng {today.getMonth() + 1} năm {today.getFullYear()}, tại <strong>{booking.contractLocation || '...........................................'}</strong>, chúng tôi gồm:</p>
 
         <div className="font-bold uppercase mt-2">BÊN CHO THUÊ (sau đây gọi là Bên A)</div>
         <div className="grid grid-cols-2 gap-2 pl-4">

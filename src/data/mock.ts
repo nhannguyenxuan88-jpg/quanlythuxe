@@ -33,6 +33,14 @@ export interface Booking {
   customerCccdDate?: string; // Ngày cấp CCCD
   customerCccdPlace?: string; // Nơi cấp CCCD
   customerAddress?: string;
+  customerLicenseClass?: string;
+  customerLicenseNumber?: string;
+  customerLicenseExpiry?: string;
+  rentalPurpose?: string;
+  paymentMethod?: string;
+  paymentDate?: string;
+  depositAmount?: number;
+  contractLocation?: string;
   customerIdFront?: string; // Ảnh mặt trước CCCD
   customerIdBack?: string;  // Ảnh mặt sau CCCD
   contractUrl?: string;     // Link lưu trữ bản sao Hợp Đồng (Ảnh/PDF)

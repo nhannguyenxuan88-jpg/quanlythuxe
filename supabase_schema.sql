@@ -49,6 +49,14 @@ create table if not exists public.bookings (
     customer_cccd_date text,
     customer_cccd_place text,
     customer_address text,
+    customer_license_class text,
+    customer_license_number text,
+    customer_license_expiry text,
+    rental_purpose text,
+    payment_method text,
+    payment_date text,
+    deposit_amount numeric,
+    contract_location text,
     customer_id_front text, -- Ảnh mặt trước CCCD
     customer_id_back text, -- Ảnh mặt sau CCCD
     contract_url text, -- Link lưu trữ bản sao Hợp Đồng (Ảnh/PDF)

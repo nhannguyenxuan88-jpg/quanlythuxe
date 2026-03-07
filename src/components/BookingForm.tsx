@@ -27,6 +27,7 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
     paymentMethod: 'Chuyển khoản',
     paymentDate: new Date().toLocaleDateString('vi-VN'),
     depositAmount: 15000000,
+    contractLocation: '',
     carId: '',
     startDate: new Date().toISOString().slice(0, 16),
     endDate: new Date(Date.now() + 86400000).toISOString().slice(0, 16),
@@ -292,15 +293,27 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
                 </div>
 
                 {/* --- THÔNG TIN THUÊ & THANH TOÁN --- */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Mục đích thuê</label>
-                  <input
-                    type="text"
-                    value={formData.rentalPurpose}
-                    onChange={e => setFormData({ ...formData, rentalPurpose: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                    placeholder="VD: Du lịch, Về quê, Đi công tác..."
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Mục đích thuê</label>
+                    <input
+                      type="text"
+                      value={formData.rentalPurpose}
+                      onChange={e => setFormData({ ...formData, rentalPurpose: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                      placeholder="VD: Du lịch..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Nơi lập hợp đồng</label>
+                    <input
+                      type="text"
+                      value={formData.contractLocation}
+                      onChange={e => setFormData({ ...formData, contractLocation: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                      placeholder="VD: TP Hồ Chí Minh"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
