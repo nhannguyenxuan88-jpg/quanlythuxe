@@ -1,0 +1,5 @@
+{
+  "name": "AutoRent Manager",
+  "description": "Ứng dụng quản lý cho thuê xe ô tô tự lái",
+  "requestFramePermissions": []
+}
