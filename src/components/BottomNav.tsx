@@ -16,7 +16,7 @@ export function BottomNav({ currentView, onViewChange }: BottomNavProps) {
     ];
 
     return (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-2 py-2 flex justify-between items-center z-40 pb-safe">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200/60 px-2 pt-2 pb-safe shadow-[0_-4px_24px_rgba(0,0,0,0.02)] flex justify-between items-center z-50">
             {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentView === item.id;

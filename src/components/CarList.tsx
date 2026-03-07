@@ -160,33 +160,52 @@ export function CarList({ cars, onAddCar, onUpdateCar, onDeleteCar }: CarListPro
           </table>
 
           {/* Mobile Card View */}
-          <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+          <div className="grid grid-cols-1 gap-4 p-4 md:hidden bg-slate-50/50">
             {filteredCars.map((car) => (
-              <div key={car.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-4">
+              <div key={car.id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-4">
                 <div className="flex gap-4">
-                  <div className="w-20 h-20 rounded-lg bg-slate-100 overflow-hidden shrink-0">
+                  <div className="w-24 h-24 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-100 shadow-sm relative">
                     <img src={car.image} alt={car.model} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    <div className="absolute top-1 right-1">
+                      <span className={cn("w-3 h-3 rounded-full border-2 border-white shadow-sm block", car.status === 'available' ? 'bg-emerald-500' : car.status === 'rented' ? 'bg-amber-500' : 'bg-rose-500')}></span>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-semibold text-slate-900 truncate">{car.brand} {car.model}</h3>
-                        <p className="text-sm text-slate-500">{car.year}</p>
+                  <div className="flex-1 min-w-0 py-1">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-slate-900 truncate text-base">{car.brand} {car.model}</h3>
+                        <p className="text-sm text-slate-500 mt-0.5">{car.year}</p>
                       </div>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-slate-800 font-mono text-xs border border-slate-200 bg-slate-50">
+                      <div className="flex gap-1 shrink-0">
+                        <button className="p-1.5 text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 rounded-lg transition-colors">
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => onDeleteCar(car.id)}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="inline-block px-2 py-1 rounded text-[11px] font-mono bg-slate-100 text-slate-700 border border-slate-200 shadow-sm">
                         {car.plate}
                       </span>
                     </div>
-                    <p className="font-medium text-indigo-600 mt-2">{formatCurrency(car.pricePerDay)}/ngày</p>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                  <div>
+                    <p className="text-xs text-slate-500 font-medium mb-0.5">Giá thuê/ngày</p>
+                    <p className="font-bold text-indigo-600 leading-none">{formatCurrency(car.pricePerDay)}</p>
+                  </div>
                   <select
                     value={car.status}
                     onChange={(e) => onUpdateCar(car.id, { status: e.target.value as CarStatus })}
                     className={cn(
-                      "appearance-none cursor-pointer outline-none inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium border focus:ring-2 focus:ring-indigo-500 transition-colors",
+                      "appearance-none cursor-pointer outline-none inline-flex items-center px-4 py-2 rounded-xl text-xs font-semibold border focus:ring-2 focus:ring-indigo-500 transition-colors shadow-sm",
                       getStatusColor(car.status)
                     )}
                   >
@@ -194,18 +213,6 @@ export function CarList({ cars, onAddCar, onUpdateCar, onDeleteCar }: CarListPro
                     <option value="rented" className="bg-white text-slate-900 font-sans">Đang thuê</option>
                     <option value="maintenance" className="bg-white text-slate-900 font-sans">Bảo dưỡng</option>
                   </select>
-
-                  <div className="flex items-center gap-2">
-                    <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
-                      <Edit size={18} />
-                    </button>
-                    <button
-                      onClick={() => onDeleteCar(car.id)}
-                      className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
                 </div>
               </div>
             ))}
