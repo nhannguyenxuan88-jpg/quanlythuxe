@@ -155,7 +155,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
         <div className="text-center w-1/2 relative flex flex-col items-center">
           <p className="font-bold uppercase">BÊN THUÊ</p>
           <div className="h-40 w-full max-w-[250px] relative flex flex-col items-center justify-center border-b border-dashed border-gray-300 print:border-none my-2">
-            <div className="print:hidden w-full h-full cursor-crosshair">
+            <div className="print:hidden w-full h-full cursor-crosshair touch-none select-none">
               <SignatureCanvas
                 ref={signatureRef}
                 canvasProps={{ className: 'w-full h-full' }}
