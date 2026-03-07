@@ -56,6 +56,19 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
 
   const selectedCar = cars.find(c => c.id === formData.carId);
 
+  const [lessorData, setLessorData] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await supabase.from('settings').select('*').eq('key', 'lessor_info').single();
+        if (data) setLessorData(data.value);
+      } catch (err) {
+        console.error('Failed to load lessor info:', err);
+      }
+    })();
+  }, []);
+
   useEffect(() => {
     if (formData.startDate && formData.endDate && selectedCar) {
       const start = new Date(formData.startDate);
@@ -568,7 +581,7 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
 
           {/* Preview Section - Visible when printing or contract tab is active */}
           <div className={`w-full md:w-2/3 bg-slate-50 overflow-y-auto print:w-full print:bg-white print:block ${activeTab === 'contract' ? 'block' : 'hidden md:block'}`}>
-            <ContractPreview ref={contractRef} booking={formData} car={selectedCar} />
+            <ContractPreview ref={contractRef} booking={formData} car={selectedCar} lessorData={lessorData} />
           </div>
 
         </div>

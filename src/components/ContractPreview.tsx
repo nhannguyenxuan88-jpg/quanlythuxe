@@ -7,24 +7,28 @@ import { Eraser } from 'lucide-react';
 interface ContractPreviewProps {
   booking: Partial<Booking>;
   car?: Car;
+  lessorData?: any;
 }
 
-export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(({ booking, car }, ref) => {
+export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(({ booking, car, lessorData: injectedLessorData }, ref) => {
   const today = new Date();
   const signatureRef = useRef<SignatureCanvas>(null);
   const [signatureData, setSignatureData] = useState<string | null>(null);
 
-  // Load lessor info from Supabase settings
-  const [lessorData, setLessorData] = useState<any>(null);
+  // Load lessor info from Supabase settings if not injected
+  const [localLessorData, setLocalLessorData] = useState<any>(null);
   useEffect(() => {
+    if (injectedLessorData) return;
     (async () => {
       try {
         const { supabase } = await import('../lib/supabase');
         const { data } = await supabase.from('settings').select('*').eq('key', 'lessor_info').single();
-        if (data) setLessorData(data.value);
+        if (data) setLocalLessorData(data.value);
       } catch { }
     })();
-  }, []);
+  }, [injectedLessorData]);
+
+  const lessorData = injectedLessorData || localLessorData;
   const lessorName = lessorData?.name || 'HOÀNG BÁ NGUYÊN';
   const lessorYearOfBirth = lessorData?.yearOfBirth || '1991';
   const lessorCccd = lessorData?.cccd || '066091019537';

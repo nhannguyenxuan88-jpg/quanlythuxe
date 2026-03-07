@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Booking, Car as CarType, BookingStatus } from '../data/mock';
 import { Plus, Search, Filter, Calendar as CalendarIcon, MoreVertical, Edit, Trash2, Printer, X, Image as ImageIcon, Download, ClipboardCheck, FileText } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -26,6 +26,19 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
   const [printingBooking, setPrintingBooking] = useState<Booking | null>(null);
   const [viewingDocuments, setViewingDocuments] = useState<Booking | null>(null);
   const [handoverBooking, setHandoverBooking] = useState<{ booking: Booking, type: 'checkout' | 'checkin' } | null>(null);
+  const [lessorData, setLessorData] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { supabase } = await import('../lib/supabase');
+        const { data } = await supabase.from('settings').select('*').eq('key', 'lessor_info').single();
+        if (data) setLessorData(data.value);
+      } catch (err) {
+        console.error('Failed to load lessor info:', err);
+      }
+    })();
+  }, []);
 
   const filteredBookings = bookings.filter(booking => {
     const car = cars.find(c => c.id === booking.carId);
@@ -651,6 +664,7 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
           <ContractPreview
             booking={printingBooking}
             car={cars.find(c => c.id === printingBooking.carId)}
+            lessorData={lessorData}
           />
         </div>
       )}
