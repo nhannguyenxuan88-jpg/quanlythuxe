@@ -163,9 +163,18 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                     </td>
                     <td className="p-4 font-medium text-slate-900">{formatCurrency(booking.totalAmount)}</td>
                     <td className="p-4">
-                      <span className={cn("inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border", getStatusColor(booking.status))}>
-                        {getStatusLabel(booking.status)}
-                      </span>
+                      <select
+                        value={booking.status}
+                        onChange={(e) => onUpdateBooking(booking.id, { status: e.target.value as BookingStatus })}
+                        className={cn(
+                          "appearance-none cursor-pointer outline-none inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border focus:ring-2 focus:ring-indigo-500 transition-colors",
+                          getStatusColor(booking.status)
+                        )}
+                      >
+                        <option value="active" className="bg-white text-slate-900 font-sans">Đang chạy</option>
+                        <option value="completed" className="bg-white text-slate-900 font-sans">Hoàn thành</option>
+                        <option value="cancelled" className="bg-white text-slate-900 font-sans">Đã hủy</option>
+                      </select>
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -225,9 +234,18 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                       <h3 className="font-semibold text-slate-900 text-base">{booking.customerName}</h3>
                       <p className="text-sm text-slate-500 mt-0.5">{booking.customerPhone}</p>
                     </div>
-                    <span className={cn("inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border", getStatusColor(booking.status))}>
-                      {getStatusLabel(booking.status)}
-                    </span>
+                    <select
+                      value={booking.status}
+                      onChange={(e) => onUpdateBooking(booking.id, { status: e.target.value as BookingStatus })}
+                      className={cn(
+                        "appearance-none cursor-pointer outline-none inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border focus:ring-2 focus:ring-indigo-500 transition-colors",
+                        getStatusColor(booking.status)
+                      )}
+                    >
+                      <option value="active" className="bg-white text-slate-900 font-sans">Đang chạy</option>
+                      <option value="completed" className="bg-white text-slate-900 font-sans">Hoàn thành</option>
+                      <option value="cancelled" className="bg-white text-slate-900 font-sans">Đã hủy</option>
+                    </select>
                   </div>
 
                   {car ? (
