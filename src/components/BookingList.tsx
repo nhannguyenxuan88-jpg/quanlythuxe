@@ -513,6 +513,75 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                   </div>
                 </div>
               )}
+
+              {/* Handover Check-out */}
+              {viewingDocuments.checkOutTime && (
+                <div className="space-y-3 pt-4 border-t border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-slate-700 flex items-center gap-2">
+                      <ClipboardCheck size={18} className="text-amber-500" />
+                      Biên bản Giao xe
+                    </h4>
+                    <span className="text-xs text-slate-500">{formatDate(viewingDocuments.checkOutTime)}</span>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl p-3 text-sm flex gap-4">
+                    <div><span className="text-slate-500">ODO:</span> <span className="font-medium text-slate-900">{viewingDocuments.checkOutOdo} km</span></div>
+                    <div><span className="text-slate-500">Pin:</span> <span className="font-medium text-slate-900">{viewingDocuments.checkOutFuel}</span></div>
+                  </div>
+                  {viewingDocuments.checkOutNotes && (
+                    <p className="text-sm text-slate-600 italic">Ghi chú: {viewingDocuments.checkOutNotes}</p>
+                  )}
+                  {viewingDocuments.checkOutImages && viewingDocuments.checkOutImages.length > 0 && (
+                    <div className="grid grid-cols-2 gap-3 mt-2">
+                      {viewingDocuments.checkOutImages.map((url, i) => (
+                        <div key={i} className="aspect-video bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+                          <img src={url} alt={`Lúc giao ${i + 1}`} className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Handover Check-in */}
+              {viewingDocuments.checkInTime && (
+                <div className="space-y-3 pt-4 border-t border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-slate-700 flex items-center gap-2">
+                      <ClipboardCheck size={18} className="text-indigo-500" />
+                      Biên bản Nhận xe
+                    </h4>
+                    <span className="text-xs text-slate-500">{formatDate(viewingDocuments.checkInTime)}</span>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl p-3 text-sm flex gap-4">
+                    <div><span className="text-slate-500">ODO:</span> <span className="font-medium text-slate-900">{viewingDocuments.checkInOdo} km</span></div>
+                    <div><span className="text-slate-500">Pin:</span> <span className="font-medium text-slate-900">{viewingDocuments.checkInFuel}</span></div>
+                  </div>
+                  {viewingDocuments.checkInNotes && (
+                    <p className="text-sm text-slate-600 italic">Ghi chú: {viewingDocuments.checkInNotes}</p>
+                  )}
+                  {viewingDocuments.checkInImages && viewingDocuments.checkInImages.length > 0 && (
+                    <div className="grid grid-cols-2 gap-3 mt-2">
+                      {viewingDocuments.checkInImages.map((url, i) => (
+                        <div key={i} className="aspect-video bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+                          <img src={url} alt={`Lúc nhận ${i + 1}`} className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!viewingDocuments.contractUrl &&
+                !viewingDocuments.customerIdFront &&
+                !viewingDocuments.customerIdBack &&
+                !viewingDocuments.customerLicenseFront &&
+                !viewingDocuments.customerLicenseBack &&
+                !viewingDocuments.checkOutTime && (
+                  <div className="text-center py-8 text-slate-500">
+                    Không có tài liệu hay biên bản nào được đính kèm.
+                  </div>
+                )}
             </div>
           </div>
         </div>

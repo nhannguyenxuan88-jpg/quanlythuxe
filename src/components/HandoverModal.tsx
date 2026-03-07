@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Booking, Car } from '../data/mock';
-import { X, Camera, Upload, Trash2, Loader2, Gauge, Fuel } from 'lucide-react';
+import { X, Camera, Upload, Trash2, Loader2, Gauge, BatteryCharging } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 
@@ -12,7 +12,7 @@ interface HandoverModalProps {
     onSuccess: (updatedBooking: Booking) => void;
 }
 
-const FUEL_LEVELS = ['Hết', '1/4', '1/2', '3/4', 'Đầy'];
+const BATTERY_LEVELS = ['Dưới 20%', '40%', '60%', '80%', '100%'];
 
 export function HandoverModal({ booking, car, type, onClose, onSuccess }: HandoverModalProps) {
     const isCheckOut = type === 'checkout';
@@ -188,18 +188,18 @@ export function HandoverModal({ booking, car, type, onClose, onSuccess }: Handov
                         {/* Fuel */}
                         <div>
                             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-                                <Fuel size={16} className="text-emerald-500" />
-                                Mức xăng hiện tại
+                                <BatteryCharging size={16} className="text-emerald-500" />
+                                Mức pin hiện tại
                             </label>
                             <div className="flex bg-slate-100 p-1 rounded-xl">
-                                {FUEL_LEVELS.map(level => (
+                                {BATTERY_LEVELS.map(level => (
                                     <button
                                         key={level}
                                         type="button"
                                         onClick={() => setFuel(level)}
                                         className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${fuel === level
-                                                ? 'bg-white shadow text-emerald-600'
-                                                : 'text-slate-500 hover:text-slate-700'
+                                            ? 'bg-white shadow text-emerald-600'
+                                            : 'text-slate-500 hover:text-slate-700'
                                             }`}
                                     >
                                         {level}
