@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Booking, Car as CarType, BookingStatus } from '../data/mock';
-import { Plus, Search, Filter, Calendar as CalendarIcon, MoreVertical, Edit, Trash2, Printer, X, Image as ImageIcon, Download, ClipboardCheck, FileText, MessageSquare } from 'lucide-react';
+import { Plus, Search, Filter, Calendar as CalendarIcon, MoreVertical, Edit, Trash2, Printer, X, Image as ImageIcon, Download, ClipboardCheck, FileText, MessageSquare, Loader2 } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import { cn } from '../lib/utils';
 import { format, differenceInDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -27,6 +29,9 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
   const [viewingDocuments, setViewingDocuments] = useState<Booking | null>(null);
   const [handoverBooking, setHandoverBooking] = useState<{ booking: Booking, type: 'checkout' | 'checkin' } | null>(null);
   const [lessorData, setLessorData] = useState<any>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const hiddenContractRef = import('react').then(module => module.useRef<HTMLDivElement>(null)); // Just use a standard useRef
+  const contractRef = import('react').then(module => module.useRef<HTMLDivElement>(null));
 
   useEffect(() => {
     (async () => {
@@ -120,6 +125,66 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  const handleShareZaloPDF = async (bookingToShare: Booking) => {
+    setIsGeneratingPDF(true);
+    setPrintingBooking(bookingToShare); // Temporarily open print view so we can capture it
+
+    // Give it a short delay to render the DOM
+    setTimeout(async () => {
+      try {
+        const contractEl = document.getElementById('print-contract-preview');
+        if (!contractEl) throw new Error('Không tìm thấy giao diện hợp đồng');
+
+        const canvas = await html2canvas(contractEl, {
+          scale: 2,
+          useCORS: true,
+          logging: false
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+
+        const pdfBlob = pdf.output('blob');
+        const file = new File([pdfBlob], `Hop_Dong_${bookingToShare.customerName.replace(/ /g, '_')}.pdf`, { type: 'application/pdf' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'Hợp Đồng Thuê Xe',
+            text: `Gửi anh/chị bản điện tử Hợp đồng thuê xe.`,
+            files: [file]
+          });
+        } else {
+          // Fallback if Web Share is not supported for files (e.g. desktop)
+          const url = URL.createObjectURL(pdfBlob);
+          window.open(`https://zalo.me/?text=${encodeURIComponent(`Anh/chị truy cập link để tải hợp đồng: ${bookingToShare.contractUrl || ''}`)}`, '_blank');
+
+          // Also trigger a normal download as a fallback
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = file.name;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      } catch (error) {
+        console.error('Lỗi tạo PDF:', error);
+        alert('Có lỗi xảy ra khi tạo PDF. Vui lòng thử lại.');
+      } finally {
+        setIsGeneratingPDF(false);
+        setPrintingBooking(null); // Hide print view again
+      }
+    }, 500);
+  };
+
 
   return (
     <div className="space-y-6">
@@ -511,17 +576,14 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                     <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Hợp Đồng Cho Thuê
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    {viewingDocuments.contractUrl && (
-                      <button
-                        onClick={() => {
-                          const message = `Gửi anh/chị bản điện tử Hợp đồng thuê xe: ${viewingDocuments.contractUrl}`;
-                          window.open(`https://zalo.me/?text=${encodeURIComponent(message)}`, '_blank');
-                        }}
-                        className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
-                      >
-                        <MessageSquare size={16} /> Gửi Zalo
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleShareZaloPDF(viewingDocuments)}
+                      disabled={isGeneratingPDF}
+                      className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 disabled:opacity-70"
+                    >
+                      {isGeneratingPDF ? <Loader2 size={16} className="animate-spin" /> : <MessageSquare size={16} />}
+                      {isGeneratingPDF ? 'Đang tạo PDF...' : 'Chia sẻ Zalo (PDF)'}
+                    </button>
                     <button
                       onClick={() => {
                         setPrintingBooking(viewingDocuments);
@@ -665,7 +727,7 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
 
       {/* Print View for Existing Booking */}
       {printingBooking && (
-        <div className="fixed inset-0 bg-white z-[100] overflow-auto print:static print:block">
+        <div id="print-contract-preview" className={`fixed inset-0 bg-white z-[100] overflow-auto print:static print:block ${isGeneratingPDF ? 'opacity-0 pointer-events-none' : ''}`}>
           <div className="print:hidden p-4 flex justify-end bg-slate-100 border-b">
             <button
               onClick={() => setPrintingBooking(null)}
