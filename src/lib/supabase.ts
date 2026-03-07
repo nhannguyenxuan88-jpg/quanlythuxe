@@ -57,6 +57,9 @@ export function mapDbToBooking(dbBooking: any): any {
         endDate: dbBooking.end_date,
         totalAmount: dbBooking.total_amount,
         status: dbBooking.status,
+        customerIdFront: dbBooking.customer_id_front,
+        customerIdBack: dbBooking.customer_id_back,
+        contractUrl: dbBooking.contract_url,
     };
 }
 
@@ -70,5 +73,8 @@ export function mapBookingToDb(booking: any): any {
     if (booking.startDate !== undefined) { dbBooking.start_date = booking.startDate; delete dbBooking.startDate; }
     if (booking.endDate !== undefined) { dbBooking.end_date = booking.endDate; delete dbBooking.endDate; }
     if (booking.totalAmount !== undefined) { dbBooking.total_amount = booking.totalAmount; delete dbBooking.totalAmount; }
+    if (booking.customerIdFront !== undefined) { dbBooking.customer_id_front = booking.customerIdFront; delete dbBooking.customerIdFront; }
+    if (booking.customerIdBack !== undefined) { dbBooking.customer_id_back = booking.customerIdBack; delete dbBooking.customerIdBack; }
+    if (booking.contractUrl !== undefined) { dbBooking.contract_url = booking.contractUrl; delete dbBooking.contractUrl; }
     return dbBooking;
 }
