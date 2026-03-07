@@ -70,6 +70,8 @@ export function mapDbToBooking(dbBooking: any): any {
         status: dbBooking.status,
         customerIdFront: dbBooking.customer_id_front,
         customerIdBack: dbBooking.customer_id_back,
+        customerLicenseFront: dbBooking.customer_license_front,
+        customerLicenseBack: dbBooking.customer_license_back,
         contractUrl: dbBooking.contract_url,
     };
 }

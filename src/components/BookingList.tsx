@@ -213,7 +213,7 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
             {filteredBookings.map((booking) => {
               const car = cars.find(c => c.id === booking.carId);
               const days = Math.max(1, differenceInDays(new Date(booking.endDate), new Date(booking.startDate)));
-              const hasDocs = booking.contractUrl || booking.customerIdFront || booking.customerIdBack;
+              const hasDocs = booking.contractUrl || booking.customerIdFront || booking.customerIdBack || booking.customerLicenseFront || booking.customerLicenseBack;
               return (
                 <div key={booking.id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-4">
                   <div className="flex justify-between items-start border-b border-slate-100 pb-3">

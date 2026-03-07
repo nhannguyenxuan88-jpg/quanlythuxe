@@ -59,6 +59,8 @@ create table if not exists public.bookings (
     contract_location text,
     customer_id_front text, -- Ảnh mặt trước CCCD
     customer_id_back text, -- Ảnh mặt sau CCCD
+    customer_license_front text, -- Ảnh mặt trước GPLX
+    customer_license_back text, -- Ảnh mặt sau GPLX
     contract_url text, -- Link lưu trữ bản sao Hợp Đồng (Ảnh/PDF)
     start_date timestamp with time zone not null,
     end_date timestamp with time zone not null,

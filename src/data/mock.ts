@@ -43,6 +43,8 @@ export interface Booking {
   contractLocation?: string;
   customerIdFront?: string; // Ảnh mặt trước CCCD
   customerIdBack?: string;  // Ảnh mặt sau CCCD
+  customerLicenseFront?: string; // Ảnh mặt trước GPLX
+  customerLicenseBack?: string;  // Ảnh mặt sau GPLX
   contractUrl?: string;     // Link lưu trữ bản sao Hợp Đồng (Ảnh/PDF)
   startDate: string;
   endDate: string;

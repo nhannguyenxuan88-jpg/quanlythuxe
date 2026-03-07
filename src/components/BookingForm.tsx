@@ -100,7 +100,21 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
         if (url) customerIdBackUrl = url;
       }
 
-      // 3. Generate & upload Contract screenshot
+      // 3. Upload License front
+      let customerLicenseFrontUrl = formData.customerLicenseFront;
+      if (idFiles.licenseFront) {
+        const url = await uploadFile(idFiles.licenseFront, 'gplx_front');
+        if (url) customerLicenseFrontUrl = url;
+      }
+
+      // 4. Upload License back
+      let customerLicenseBackUrl = formData.customerLicenseBack;
+      if (idFiles.licenseBack) {
+        const url = await uploadFile(idFiles.licenseBack, 'gplx_back');
+        if (url) customerLicenseBackUrl = url;
+      }
+
+      // 5. Generate & upload Contract screenshot
       if (contractRef.current) {
         // Switch to contract tab briefly if not visible to ensure rendering, though it's hidden we might need to make it visible
         const originalTab = activeTab;
@@ -128,6 +142,8 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
         ...formData,
         customerIdFront: customerIdFrontUrl,
         customerIdBack: customerIdBackUrl,
+        customerLicenseFront: customerLicenseFrontUrl,
+        customerLicenseBack: customerLicenseBackUrl,
         contractUrl,
       } as Omit<Booking, 'id'>);
 
@@ -412,6 +428,75 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
                             if (file) {
                               setFormData({ ...formData, customerIdBack: URL.createObjectURL(file) });
                               setIdFiles(prev => ({ ...prev, back: file }));
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Ảnh GPLX (Bằng Lái)</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Mặt trước GPLX */}
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Mặt trước</label>
+                      <div className="relative border-2 border-dashed border-slate-200 rounded-xl overflow-hidden hover:border-indigo-500 transition-colors bg-slate-50 group aspect-[4/3] flex items-center justify-center">
+                        {formData.customerLicenseFront ? (
+                          <>
+                            <img src={formData.customerLicenseFront} alt="GPLX Mặt Trước" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <span className="text-white text-sm font-medium">Thay đổi ảnh</span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                            <Upload className="w-6 h-6 mb-2" />
+                            <span className="text-xs font-medium">Tải ảnh lên<br />(Mặt trước)</span>
+                          </div>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setFormData({ ...formData, customerLicenseFront: URL.createObjectURL(file) });
+                              setIdFiles(prev => ({ ...prev, licenseFront: file }));
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Mặt sau GPLX */}
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Mặt sau</label>
+                      <div className="relative border-2 border-dashed border-slate-200 rounded-xl overflow-hidden hover:border-indigo-500 transition-colors bg-slate-50 group aspect-[4/3] flex items-center justify-center">
+                        {formData.customerLicenseBack ? (
+                          <>
+                            <img src={formData.customerLicenseBack} alt="GPLX Mặt Sau" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <span className="text-white text-sm font-medium">Thay đổi ảnh</span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                            <Upload className="w-6 h-6 mb-2" />
+                            <span className="text-xs font-medium">Tải ảnh lên<br />(Mặt sau)</span>
+                          </div>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setFormData({ ...formData, customerLicenseBack: URL.createObjectURL(file) });
+                              setIdFiles(prev => ({ ...prev, licenseBack: file }));
                             }
                           }}
                         />
