@@ -1,6 +1,8 @@
-import { forwardRef } from 'react';
+import { forwardRef, useRef, useState } from 'react';
 import { Booking, Car } from '../data/mock';
 import { format } from 'date-fns';
+import SignatureCanvas from 'react-signature-canvas';
+import { Eraser } from 'lucide-react';
 
 interface ContractPreviewProps {
   booking: Partial<Booking>;
@@ -9,6 +11,19 @@ interface ContractPreviewProps {
 
 export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(({ booking, car }, ref) => {
   const today = new Date();
+  const signatureRef = useRef<SignatureCanvas>(null);
+  const [signatureData, setSignatureData] = useState<string | null>(null);
+
+  const handleClearSignature = () => {
+    signatureRef.current?.clear();
+    setSignatureData(null);
+  };
+
+  const handleEndDrawing = () => {
+    if (signatureRef.current) {
+      setSignatureData(signatureRef.current.getTrimmedCanvas().toDataURL('image/png'));
+    }
+  };
 
   return (
     <div ref={ref} className="bg-white p-4 sm:p-8 text-black max-w-4xl mx-auto print:p-0 print:m-0 text-sm leading-relaxed" style={{ fontFamily: '"Times New Roman", Times, serif' }}>
@@ -76,7 +91,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
         <p>1. Giá thuê tài sản nêu trên là: <strong>{booking.totalAmount ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(booking.totalAmount) : '......................'}</strong></p>
         <p>2. Phương thức thanh toán: Thanh toán bằng ........................ và Bên B phải thanh toán cho Bên A số tiền thuê xe ô tô nêu trên vào ngày ........................</p>
         <p>3. Việc giao và nhận số tiền nêu trên do hai bên tự thực hiện và chịu trách nhiệm trước pháp luật.</p>
-        <p>4. Bên B cọc là {booking.deposit ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(booking.deposit) : '......................'} thế chấp, Bên A phải hoàn trả số tiền này ngay khi nhận lại xe.</p>
+        <p>4. Bên B cọc là {(booking as any).deposit ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format((booking as any).deposit) : '......................'} thế chấp, Bên A phải hoàn trả số tiền này ngay khi nhận lại xe.</p>
 
         <div className="font-bold mt-4">Điều 5: Phương thức giao, trả lại tài sản thuê</div>
         <p>Hết thời hạn thuê nêu trên, Bên B phải giao trả chiếc xe ô tô trên cho Bên A.</p>
@@ -134,12 +149,36 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
       <div className="flex justify-between mt-12 pt-8">
         <div className="text-center w-1/2">
           <p className="font-bold uppercase">BÊN CHO THUÊ</p>
-          <div className="h-32"></div>
+          <div className="h-40"></div>
           <p className="font-bold">HOÀNG BÁ NGUYÊN</p>
         </div>
-        <div className="text-center w-1/2">
+        <div className="text-center w-1/2 relative flex flex-col items-center">
           <p className="font-bold uppercase">BÊN THUÊ</p>
-          <div className="h-32"></div>
+          <div className="h-40 w-full max-w-[250px] relative flex flex-col items-center justify-center border-b border-dashed border-gray-300 print:border-none my-2">
+            <div className="print:hidden w-full h-full cursor-crosshair">
+              <SignatureCanvas
+                ref={signatureRef}
+                canvasProps={{ className: 'w-full h-full' }}
+                onEnd={handleEndDrawing}
+              />
+            </div>
+            {/* When printing or has signature data, show the signed image to ensure print compatibility */}
+            {signatureData && (
+              <img src={signatureData} alt="Client Signature" className="absolute select-none pointer-events-none w-full h-full object-contain drop-shadow-sm opacity-0 print:opacity-100" />
+            )}
+            {!signatureData && <span className="absolute text-gray-300 select-none pointer-events-none text-xs print:hidden">(Khách hàng ký tại đây)</span>}
+          </div>
+          {/* Action button hidden during print */}
+          <div className="absolute top-10 -right-4 print:hidden">
+            <button
+              onClick={handleClearSignature}
+              title="Xoá chữ ký"
+              className="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full transition-colors shadow-sm"
+              type="button"
+            >
+              <Eraser size={16} />
+            </button>
+          </div>
           <p className="font-bold">{booking.customerName}</p>
         </div>
       </div>
