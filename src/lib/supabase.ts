@@ -89,43 +89,49 @@ export function mapDbToBooking(dbBooking: any): any {
 }
 
 export function mapBookingToDb(booking: any): any {
-    const dbBooking: any = { ...booking };
-    if (booking.carId !== undefined) { dbBooking.car_id = booking.carId; delete dbBooking.carId; }
-    if (booking.customerName !== undefined) { dbBooking.customer_name = booking.customerName; delete dbBooking.customerName; }
-    if (booking.customerPhone !== undefined) { dbBooking.customer_phone = booking.customerPhone; delete dbBooking.customerPhone; }
-    if (booking.customerYearOfBirth !== undefined) { dbBooking.customer_year_of_birth = booking.customerYearOfBirth; delete dbBooking.customerYearOfBirth; }
-    if (booking.customerCCCD !== undefined) { dbBooking.customer_cccd = booking.customerCCCD; delete dbBooking.customerCCCD; }
-    if (booking.customerCccdDate !== undefined) { dbBooking.customer_cccd_date = booking.customerCccdDate; delete dbBooking.customerCccdDate; }
-    if (booking.customerCccdPlace !== undefined) { dbBooking.customer_cccd_place = booking.customerCccdPlace; delete dbBooking.customerCccdPlace; }
-    if (booking.customerAddress !== undefined) { dbBooking.customer_address = booking.customerAddress; delete dbBooking.customerAddress; }
-    if (booking.customerLicenseClass !== undefined) { dbBooking.customer_license_class = booking.customerLicenseClass; delete dbBooking.customerLicenseClass; }
-    if (booking.customerLicenseNumber !== undefined) { dbBooking.customer_license_number = booking.customerLicenseNumber; delete dbBooking.customerLicenseNumber; }
-    if (booking.customerLicenseExpiry !== undefined) { dbBooking.customer_license_expiry = booking.customerLicenseExpiry; delete dbBooking.customerLicenseExpiry; }
-    if (booking.rentalPurpose !== undefined) { dbBooking.rental_purpose = booking.rentalPurpose; delete dbBooking.rentalPurpose; }
-    if (booking.paymentMethod !== undefined) { dbBooking.payment_method = booking.paymentMethod; delete dbBooking.paymentMethod; }
-    if (booking.paymentDate !== undefined) { dbBooking.payment_date = booking.paymentDate; delete dbBooking.paymentDate; }
-    if (booking.depositAmount !== undefined) { dbBooking.deposit_amount = booking.depositAmount; delete dbBooking.depositAmount; }
-    if (booking.contractLocation !== undefined) { dbBooking.contract_location = booking.contractLocation; delete dbBooking.contractLocation; }
-    if (booking.startDate !== undefined) { dbBooking.start_date = booking.startDate; delete dbBooking.startDate; }
-    if (booking.endDate !== undefined) { dbBooking.end_date = booking.endDate; delete dbBooking.endDate; }
-    if (booking.totalAmount !== undefined) { dbBooking.total_amount = booking.totalAmount; delete dbBooking.totalAmount; }
-    if (booking.customerIdFront !== undefined) { dbBooking.customer_id_front = booking.customerIdFront; delete dbBooking.customerIdFront; }
-    if (booking.customerIdBack !== undefined) { dbBooking.customer_id_back = booking.customerIdBack; delete dbBooking.customerIdBack; }
-    if (booking.customerLicenseFront !== undefined) { dbBooking.customer_license_front = booking.customerLicenseFront; delete dbBooking.customerLicenseFront; }
-    if (booking.customerLicenseBack !== undefined) { dbBooking.customer_license_back = booking.customerLicenseBack; delete dbBooking.customerLicenseBack; }
-    if (booking.contractUrl !== undefined) { dbBooking.contract_url = booking.contractUrl; delete dbBooking.contractUrl; }
+    const dbBooking: any = {};
+    if (booking.id !== undefined) dbBooking.id = booking.id;
+    if (booking.carId !== undefined) dbBooking.car_id = booking.carId;
+    if (booking.customerName !== undefined) dbBooking.customer_name = booking.customerName;
+    if (booking.customerPhone !== undefined) dbBooking.customer_phone = booking.customerPhone;
+    if (booking.customerYearOfBirth !== undefined) dbBooking.customer_year_of_birth = booking.customerYearOfBirth;
+    if (booking.customerCCCD !== undefined) dbBooking.customer_cccd = booking.customerCCCD;
+    if (booking.customerCccdDate !== undefined) dbBooking.customer_cccd_date = booking.customerCccdDate;
+    if (booking.customerCccdPlace !== undefined) dbBooking.customer_cccd_place = booking.customerCccdPlace;
+    if (booking.customerAddress !== undefined) dbBooking.customer_address = booking.customerAddress;
+    if (booking.customerLicenseClass !== undefined) dbBooking.customer_license_class = booking.customerLicenseClass;
+    if (booking.customerLicenseNumber !== undefined) dbBooking.customer_license_number = booking.customerLicenseNumber;
+    if (booking.customerLicenseExpiry !== undefined) dbBooking.customer_license_expiry = booking.customerLicenseExpiry;
+    if (booking.rentalPurpose !== undefined) dbBooking.rental_purpose = booking.rentalPurpose;
+    if (booking.paymentMethod !== undefined) dbBooking.payment_method = booking.paymentMethod;
+    if (booking.paymentDate !== undefined) dbBooking.payment_date = booking.paymentDate;
+    if (booking.depositAmount !== undefined) dbBooking.deposit_amount = booking.depositAmount;
+    if (booking.contractLocation !== undefined) dbBooking.contract_location = booking.contractLocation;
+    if (booking.startDate !== undefined) dbBooking.start_date = booking.startDate;
+    if (booking.endDate !== undefined) dbBooking.end_date = booking.endDate;
+    if (booking.totalAmount !== undefined) dbBooking.total_amount = booking.totalAmount;
+    if (booking.status !== undefined) dbBooking.status = booking.status;
 
-    if (booking.checkOutTime !== undefined) { dbBooking.check_out_time = booking.checkOutTime; delete dbBooking.checkOutTime; }
-    if (booking.checkOutOdo !== undefined) { dbBooking.check_out_odo = booking.checkOutOdo; delete dbBooking.checkOutOdo; }
-    if (booking.checkOutFuel !== undefined) { dbBooking.check_out_fuel = booking.checkOutFuel; delete dbBooking.checkOutFuel; }
-    if (booking.checkOutNotes !== undefined) { dbBooking.check_out_notes = booking.checkOutNotes; delete dbBooking.checkOutNotes; }
-    if (booking.checkOutImages !== undefined) { dbBooking.check_out_images = booking.checkOutImages; delete dbBooking.checkOutImages; }
+    // Documents
+    if (booking.customerIdFront !== undefined) dbBooking.customer_id_front = booking.customerIdFront;
+    if (booking.customerIdBack !== undefined) dbBooking.customer_id_back = booking.customerIdBack;
+    if (booking.customerLicenseFront !== undefined) dbBooking.customer_license_front = booking.customerLicenseFront;
+    if (booking.customerLicenseBack !== undefined) dbBooking.customer_license_back = booking.customerLicenseBack;
+    if (booking.contractUrl !== undefined) dbBooking.contract_url = booking.contractUrl;
 
-    if (booking.checkInTime !== undefined) { dbBooking.check_in_time = booking.checkInTime; delete dbBooking.checkInTime; }
-    if (booking.checkInOdo !== undefined) { dbBooking.check_in_odo = booking.checkInOdo; delete dbBooking.checkInOdo; }
-    if (booking.checkInFuel !== undefined) { dbBooking.check_in_fuel = booking.checkInFuel; delete dbBooking.checkInFuel; }
-    if (booking.checkInNotes !== undefined) { dbBooking.check_in_notes = booking.checkInNotes; delete dbBooking.checkInNotes; }
-    if (booking.checkInImages !== undefined) { dbBooking.check_in_images = booking.checkInImages; delete dbBooking.checkInImages; }
+    // Handover Check-out
+    if (booking.checkOutTime !== undefined) dbBooking.check_out_time = booking.checkOutTime;
+    if (booking.checkOutOdo !== undefined) dbBooking.check_out_odo = booking.checkOutOdo;
+    if (booking.checkOutFuel !== undefined) dbBooking.check_out_fuel = booking.checkOutFuel;
+    if (booking.checkOutNotes !== undefined) dbBooking.check_out_notes = booking.checkOutNotes;
+    if (booking.checkOutImages !== undefined) dbBooking.check_out_images = booking.checkOutImages;
+
+    // Handover Check-in
+    if (booking.checkInTime !== undefined) dbBooking.check_in_time = booking.checkInTime;
+    if (booking.checkInOdo !== undefined) dbBooking.check_in_odo = booking.checkInOdo;
+    if (booking.checkInFuel !== undefined) dbBooking.check_in_fuel = booking.checkInFuel;
+    if (booking.checkInNotes !== undefined) dbBooking.check_in_notes = booking.checkInNotes;
+    if (booking.checkInImages !== undefined) dbBooking.check_in_images = booking.checkInImages;
 
     // Strip blob: URLs (temporary local previews) - they can't be stored and cause errors
     for (const key of Object.keys(dbBooking)) {
