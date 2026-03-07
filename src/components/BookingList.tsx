@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Booking, Car as CarType, BookingStatus } from '../data/mock';
-import { Plus, Search, Filter, Calendar as CalendarIcon, MoreVertical, Edit, Trash2, Printer, X } from 'lucide-react';
+import { Plus, Search, Filter, Calendar as CalendarIcon, MoreVertical, Edit, Trash2, Printer, X, Image as ImageIcon } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { format, differenceInDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -20,6 +20,7 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all');
   const [isAdding, setIsAdding] = useState(false);
   const [printingBooking, setPrintingBooking] = useState<Booking | null>(null);
+  const [viewingDocuments, setViewingDocuments] = useState<Booking | null>(null);
 
   const filteredBookings = bookings.filter(booking => {
     const car = cars.find(c => c.id === booking.carId);
@@ -123,6 +124,7 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
               {filteredBookings.map((booking) => {
                 const car = cars.find(c => c.id === booking.carId);
                 const days = Math.max(1, differenceInDays(new Date(booking.endDate), new Date(booking.startDate)));
+                const hasDocs = booking.contractUrl || booking.customerIdFront || booking.customerIdBack;
                 return (
                   <tr key={booking.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="p-4">
@@ -166,6 +168,15 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {hasDocs && (
+                          <button
+                            onClick={() => setViewingDocuments(booking)}
+                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            title="Xem tài liệu đính kèm"
+                          >
+                            <ImageIcon size={18} />
+                          </button>
+                        )}
                         <button
                           onClick={() => handlePrintExisting(booking)}
                           className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
@@ -189,7 +200,7 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
               })}
               {filteredBookings.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-slate-500">
+                  <td colSpan={7} className="p-8 text-center text-slate-500">
                     Không tìm thấy đơn thuê nào phù hợp.
                   </td>
                 </tr>
@@ -202,6 +213,7 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
             {filteredBookings.map((booking) => {
               const car = cars.find(c => c.id === booking.carId);
               const days = Math.max(1, differenceInDays(new Date(booking.endDate), new Date(booking.startDate)));
+              const hasDocs = booking.contractUrl || booking.customerIdFront || booking.customerIdBack;
               return (
                 <div key={booking.id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-4">
                   <div className="flex justify-between items-start border-b border-slate-100 pb-3">
@@ -253,19 +265,28 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                       <p className="text-xs text-slate-500 font-medium">Tổng ({days} ngày)</p>
                       <p className="font-bold text-indigo-600 text-lg leading-tight mt-0.5">{formatCurrency(booking.totalAmount)}</p>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                      {hasDocs && (
+                        <button
+                          onClick={() => setViewingDocuments(booking)}
+                          className="min-w-[40px] w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm"
+                          title="Xem tài liệu"
+                        >
+                          <ImageIcon size={18} />
+                        </button>
+                      )}
                       <button
                         onClick={() => handlePrintExisting(booking)}
-                        className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm"
+                        className="min-w-[40px] w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm"
                       >
                         <Printer size={18} />
                       </button>
-                      <button className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm">
+                      <button className="min-w-[40px] w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm">
                         <Edit size={18} />
                       </button>
                       <button
                         onClick={() => onDeleteBooking(booking.id)}
-                        className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm"
+                        className="min-w-[40px] w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -292,6 +313,55 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
           }}
           onCancel={() => setIsAdding(false)}
         />
+      )}
+
+      {/* Document Viewer Modal */}
+      {viewingDocuments && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50">
+              <h3 className="font-bold text-lg text-slate-800">Tài liệu đính kèm</h3>
+              <button onClick={() => setViewingDocuments(null)} className="p-2 hover:bg-slate-200 rounded-full transition-colors bg-white shadow-sm text-slate-500 hover:text-slate-800">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-100/50 space-y-6">
+              {viewingDocuments.contractUrl && (
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-slate-700 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Bản chụp Hợp Đồng đã ký
+                  </h4>
+                  <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+                    <img src={viewingDocuments.contractUrl} alt="Hợp đồng điện tử" className="w-full h-auto rounded-lg" />
+                  </div>
+                </div>
+              )}
+
+              {(viewingDocuments.customerIdFront || viewingDocuments.customerIdBack) && (
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-slate-700 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Giấy tờ tuỳ thân (CCCD)
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {viewingDocuments.customerIdFront && (
+                      <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+                        <p className="text-xs font-medium text-slate-500 mb-2 px-1">Mặt trước</p>
+                        <img src={viewingDocuments.customerIdFront} alt="CCCD Mặt Trước" className="w-full h-auto rounded-lg object-contain bg-slate-50" />
+                      </div>
+                    )}
+                    {viewingDocuments.customerIdBack && (
+                      <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+                        <p className="text-xs font-medium text-slate-500 mb-2 px-1">Mặt sau</p>
+                        <img src={viewingDocuments.customerIdBack} alt="CCCD Mặt Sau" className="w-full h-auto rounded-lg object-contain bg-slate-50" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Print View for Existing Booking */}

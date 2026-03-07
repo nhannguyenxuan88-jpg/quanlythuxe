@@ -1,7 +1,9 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, useRef } from 'react';
 import { Booking, Car } from '../data/mock';
-import { X, Printer, Save } from 'lucide-react';
+import { X, Printer, Save, Upload, Loader2 } from 'lucide-react';
 import { ContractPreview } from './ContractPreview';
+import { supabase } from '../lib/supabase';
+import html2canvas from 'html2canvas';
 
 interface BookingFormProps {
   cars: Car[];
@@ -22,6 +24,10 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
     totalAmount: 0,
   });
 
+  const [idFiles, setIdFiles] = useState<{ front?: File, back?: File }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const contractRef = useRef<HTMLDivElement>(null);
+
   const selectedCar = cars.find(c => c.id === formData.carId);
 
   useEffect(() => {
@@ -37,13 +43,89 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
     window.print();
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const uploadFile = async (file: File | Blob, prefix: string): Promise<string | undefined> => {
+    const fileExt = file instanceof File ? file.name.split('.').pop() : 'jpg';
+    const fileName = `${prefix}_${Math.random()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('booking_documents')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error('Lỗi tải file:', uploadError);
+      return undefined;
+    }
+
+    const { data } = supabase.storage
+      .from('booking_documents')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!formData.carId || !formData.customerName || !formData.customerPhone) {
       alert('Vui lòng điền đầy đủ thông tin bắt buộc');
       return;
     }
-    onSave(formData as Omit<Booking, 'id'>);
+
+    setIsSubmitting(true);
+    let customerIdFrontUrl = formData.customerIdFront;
+    let customerIdBackUrl = formData.customerIdBack;
+    let contractUrl = formData.contractUrl;
+
+    try {
+      // 1. Upload ID front
+      if (idFiles.front) {
+        const url = await uploadFile(idFiles.front, 'cccd_front');
+        if (url) customerIdFrontUrl = url;
+      }
+
+      // 2. Upload ID back
+      if (idFiles.back) {
+        const url = await uploadFile(idFiles.back, 'cccd_back');
+        if (url) customerIdBackUrl = url;
+      }
+
+      // 3. Generate & upload Contract screenshot
+      if (contractRef.current) {
+        // Switch to contract tab briefly if not visible to ensure rendering, though it's hidden we might need to make it visible
+        const originalTab = activeTab;
+        if (activeTab === 'form' && window.innerWidth < 768) {
+          setActiveTab('contract');
+          // wait for render
+          await new Promise(r => setTimeout(r, 100));
+        }
+
+        const canvas = await html2canvas(contractRef.current, { scale: 1.5, useCORS: true, logging: false });
+        const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.8));
+
+        if (originalTab === 'form' && window.innerWidth < 768) {
+          setActiveTab('form');
+        }
+
+        if (blob) {
+          const url = await uploadFile(blob, 'contract');
+          if (url) contractUrl = url;
+        }
+      }
+
+      // Save complete booking data
+      onSave({
+        ...formData,
+        customerIdFront: customerIdFrontUrl,
+        customerIdBack: customerIdBackUrl,
+        contractUrl,
+      } as Omit<Booking, 'id'>);
+
+    } catch (error) {
+      console.error('Lỗi khi lưu đơn:', error);
+      alert('Có lỗi xảy ra khi lưu thông tin. Vui lòng thử lại.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const [activeTab, setActiveTab] = useState<'form' | 'contract'>('form');
@@ -130,6 +212,75 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
                   />
                 </div>
 
+                <div className="pt-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Ảnh CCCD / CMND</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Mặt trước */}
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Mặt trước</label>
+                      <div className="relative border-2 border-dashed border-slate-200 rounded-xl overflow-hidden hover:border-indigo-500 transition-colors bg-slate-50 group aspect-[4/3] flex items-center justify-center">
+                        {formData.customerIdFront ? (
+                          <>
+                            <img src={formData.customerIdFront} alt="CCCD Mặt Trước" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <span className="text-white text-sm font-medium">Thay đổi ảnh</span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                            <Upload className="w-6 h-6 mb-2" />
+                            <span className="text-xs font-medium">Tải ảnh lên<br />(Mặt trước)</span>
+                          </div>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setFormData({ ...formData, customerIdFront: URL.createObjectURL(file) });
+                              setIdFiles(prev => ({ ...prev, front: file }));
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Mặt sau */}
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Mặt sau</label>
+                      <div className="relative border-2 border-dashed border-slate-200 rounded-xl overflow-hidden hover:border-indigo-500 transition-colors bg-slate-50 group aspect-[4/3] flex items-center justify-center">
+                        {formData.customerIdBack ? (
+                          <>
+                            <img src={formData.customerIdBack} alt="CCCD Mặt Sau" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <span className="text-white text-sm font-medium">Thay đổi ảnh</span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                            <Upload className="w-6 h-6 mb-2" />
+                            <span className="text-xs font-medium">Tải ảnh lên<br />(Mặt sau)</span>
+                          </div>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setFormData({ ...formData, customerIdBack: URL.createObjectURL(file) });
+                              setIdFiles(prev => ({ ...prev, back: file }));
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="pt-4 border-t border-slate-100">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Chọn xe *</label>
                   <select
@@ -175,7 +326,7 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
 
           {/* Preview Section - Visible when printing or contract tab is active */}
           <div className={`w-full md:w-2/3 bg-slate-50 overflow-y-auto print:w-full print:bg-white print:block ${activeTab === 'contract' ? 'block' : 'hidden md:block'}`}>
-            <ContractPreview booking={formData} car={selectedCar} />
+            <ContractPreview ref={contractRef} booking={formData} car={selectedCar} />
           </div>
 
         </div>
@@ -214,10 +365,20 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
               <button
                 type="submit"
                 form="booking-form"
-                className={`bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-medium items-center justify-center gap-2 transition-colors shadow-sm ${activeTab === 'contract' ? 'flex flex-1 md:flex-none' : 'hidden md:flex'}`}
+                disabled={isSubmitting}
+                className={`bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-medium items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed ${activeTab === 'contract' ? 'flex flex-1 md:flex-none' : 'hidden md:flex'}`}
               >
-                <Save size={20} />
-                Lưu đơn
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    Đang lưu...
+                  </>
+                ) : (
+                  <>
+                    <Save size={20} />
+                    Lưu đơn
+                  </>
+                )}
               </button>
             </div>
           </div>

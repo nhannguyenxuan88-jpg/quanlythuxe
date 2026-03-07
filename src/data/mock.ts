@@ -30,6 +30,9 @@ export interface Booking {
   customerPhone: string;
   customerCCCD?: string;
   customerAddress?: string;
+  customerIdFront?: string; // Ảnh mặt trước CCCD
+  customerIdBack?: string;  // Ảnh mặt sau CCCD
+  contractUrl?: string;     // Link lưu trữ bản sao Hợp Đồng (Ảnh/PDF)
   startDate: string;
   endDate: string;
   totalAmount: number;

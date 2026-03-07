@@ -46,6 +46,9 @@ create table if not exists public.bookings (
     customer_phone text not null,
     customer_cccd text,
     customer_address text,
+    customer_id_front text, -- Ảnh mặt trước CCCD
+    customer_id_back text, -- Ảnh mặt sau CCCD
+    contract_url text, -- Link lưu trữ bản sao Hợp Đồng (Ảnh/PDF)
     start_date timestamp with time zone not null,
     end_date timestamp with time zone not null,
     total_amount numeric not null,
@@ -112,3 +115,19 @@ create policy "Cho phép mọi người xem ảnh xe" on storage.objects
 drop policy if exists "Cho phép quản trị xóa ảnh xe" on storage.objects;
 create policy "Cho phép quản trị xóa ảnh xe" on storage.objects 
   for delete using ( bucket_id = 'car_images' );
+
+-- Bucket lưu trữ tài liệu hợp đồng & CCCD
+insert into storage.buckets (id, name, public) values ('booking_documents', 'booking_documents', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Cho phép mọi người tải tài liệu" on storage.objects;
+create policy "Cho phép mọi người tải tài liệu" on storage.objects 
+  for insert with check ( bucket_id = 'booking_documents' );
+
+drop policy if exists "Cho phép mọi người xem tài liệu" on storage.objects;
+create policy "Cho phép mọi người xem tài liệu" on storage.objects 
+  for select using ( bucket_id = 'booking_documents' );
+  
+drop policy if exists "Cho phép quản trị xóa tài liệu" on storage.objects;
+create policy "Cho phép quản trị xóa tài liệu" on storage.objects 
+  for delete using ( bucket_id = 'booking_documents' );
