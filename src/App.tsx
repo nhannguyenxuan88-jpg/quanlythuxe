@@ -88,6 +88,15 @@ export default function App() {
       const dbBooking = mapBookingToDb(booking);
       const { data, error } = await supabase.from('bookings').insert([dbBooking]).select().single();
       if (error) throw error;
+
+      // Sync car status if booking is active
+      if (booking.status === 'active') {
+        const { error: carError } = await supabase.from('cars').update({ status: 'rented' }).eq('id', booking.carId);
+        if (!carError) {
+          setCars(cars.map(c => c.id === booking.carId ? { ...c, status: 'rented' } : c));
+        }
+      }
+
       setBookings([mapDbToBooking(data), ...bookings]);
       toast.success('Tạo đơn thuê thành công', { id: loadingToast });
     } catch (error: any) {
@@ -102,6 +111,20 @@ export default function App() {
       dbUpdates.updated_at = new Date().toISOString();
       const { data, error } = await supabase.from('bookings').update(dbUpdates).eq('id', id).select().single();
       if (error) throw error;
+
+      // Sync car status on update
+      if (updatedBooking.status !== undefined) {
+        const existingBooking = bookings.find(b => b.id === id);
+        const carId = updatedBooking.carId || existingBooking?.carId;
+        if (carId) {
+          const newCarStatus = updatedBooking.status === 'active' ? 'rented' : 'available';
+          const { error: carError } = await supabase.from('cars').update({ status: newCarStatus }).eq('id', carId);
+          if (!carError) {
+            setCars(cars.map(c => c.id === carId ? { ...c, status: newCarStatus } : c));
+          }
+        }
+      }
+
       setBookings(bookings.map(b => b.id === id ? mapDbToBooking(data) : b));
       toast.success('Cập nhật đơn thành công', { id: loadingToast });
     } catch (error: any) {
@@ -113,8 +136,18 @@ export default function App() {
     if (!window.confirm('Bạn có chắc chắn muốn xóa đơn thuê này?')) return;
     const loadingToast = toast.loading('Đang xóa đơn...');
     try {
+      const existingBooking = bookings.find(b => b.id === id);
       const { error } = await supabase.from('bookings').delete().eq('id', id);
       if (error) throw error;
+
+      // Ensure car is marked available if the active booking is deleted
+      if (existingBooking && existingBooking.carId) {
+        const { error: carError } = await supabase.from('cars').update({ status: 'available' }).eq('id', existingBooking.carId);
+        if (!carError) {
+          setCars(cars.map(c => c.id === existingBooking.carId ? { ...c, status: 'available' } : c));
+        }
+      }
+
       setBookings(bookings.filter(b => b.id !== id));
       toast.success('Xóa đơn thành công', { id: loadingToast });
     } catch (error: any) {
