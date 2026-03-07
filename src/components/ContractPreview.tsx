@@ -74,7 +74,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
         <div className="font-bold uppercase mt-4">BÊN THUÊ (Sau đây gọi tắt là Bên B)</div>
         <div className="grid grid-cols-2 gap-2 pl-4">
           <div>Ông/Bà: <strong>{booking.customerName || '........................................'}</strong></div>
-          <div>Sinh năm: <strong>{booking.customerYearOfBirth || '.................'}</strong></div>
+          <div>Sinh năm: <strong>{formatViDate(booking.customerYearOfBirth)}</strong></div>
         </div>
         <div className="pl-4">CMND/CCCD/Hộ chiếu số: <strong>{booking.customerCCCD || '......................................'}</strong> do <strong>{booking.customerCccdPlace || '....................'}</strong> cấp ngày <strong>{formatViDate(booking.customerCccdDate)}</strong></div>
         <div className="pl-4">Hộ khẩu thường trú tại: {booking.customerAddress || '...................................................................................'}</div>

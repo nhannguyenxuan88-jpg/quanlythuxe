@@ -221,11 +221,12 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Ngày sinh *</label>
                     <input
-                      type="date"
+                      type="text"
                       required
                       value={formData.customerYearOfBirth}
                       onChange={e => setFormData({ ...formData, customerYearOfBirth: e.target.value })}
                       className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                      placeholder="dd/mm/yyyy"
                     />
                   </div>
                 </div>
