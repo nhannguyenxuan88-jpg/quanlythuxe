@@ -20,6 +20,13 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
     customerCccdDate: '',
     customerCccdPlace: 'Cục Cảnh sát QLHC về TTXH',
     customerAddress: '',
+    customerLicenseClass: 'B2',
+    customerLicenseNumber: '',
+    customerLicenseExpiry: '',
+    rentalPurpose: 'Du lịch - Công tác',
+    paymentMethod: 'Chuyển khoản',
+    paymentDate: new Date().toLocaleDateString('vi-VN'),
+    depositAmount: 15000000,
     carId: '',
     startDate: new Date().toISOString().slice(0, 16),
     endDate: new Date(Date.now() + 86400000).toISOString().slice(0, 16),
@@ -194,14 +201,13 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Năm sinh *</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Ngày sinh *</label>
                     <input
-                      type="number"
+                      type="date"
                       required
                       value={formData.customerYearOfBirth}
                       onChange={e => setFormData({ ...formData, customerYearOfBirth: e.target.value })}
                       className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                      placeholder="VD: 1990"
                     />
                   </div>
                 </div>
@@ -250,6 +256,87 @@ export function BookingForm({ cars, onSave, onCancel }: BookingFormProps) {
                     onChange={e => setFormData({ ...formData, customerAddress: e.target.value })}
                     className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                     placeholder="Số nhà, đường, Huyện/Quận, Tỉnh/TP"
+                  />
+                </div>
+
+                {/* --- THÔNG TIN GPLX --- */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">GPLX Hạng</label>
+                    <input
+                      type="text"
+                      value={formData.customerLicenseClass}
+                      onChange={e => setFormData({ ...formData, customerLicenseClass: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                      placeholder="VD: B2"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Số GPLX</label>
+                    <input
+                      type="text"
+                      value={formData.customerLicenseNumber}
+                      onChange={e => setFormData({ ...formData, customerLicenseNumber: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">GPLX Giá trị đến ngày</label>
+                  <input
+                    type="text"
+                    value={formData.customerLicenseExpiry}
+                    onChange={e => setFormData({ ...formData, customerLicenseExpiry: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    placeholder="VD: 15/05/2030"
+                  />
+                </div>
+
+                {/* --- THÔNG TIN THUÊ & THANH TOÁN --- */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Mục đích thuê</label>
+                  <input
+                    type="text"
+                    value={formData.rentalPurpose}
+                    onChange={e => setFormData({ ...formData, rentalPurpose: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    placeholder="VD: Du lịch, Về quê, Đi công tác..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Phương thức TT</label>
+                    <select
+                      value={formData.paymentMethod}
+                      onChange={e => setFormData({ ...formData, paymentMethod: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white"
+                    >
+                      <option value="Chuyển khoản">Chuyển khoản</option>
+                      <option value="Tiền mặt">Tiền mặt</option>
+                      <option value="Cà thẻ">Cà thẻ</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Ngày thanh toán</label>
+                    <input
+                      type="date"
+                      value={formData.paymentDate}
+                      onChange={e => setFormData({ ...formData, paymentDate: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Tiền cọc thế chấp (VNĐ)</label>
+                  <input
+                    type="number"
+                    value={formData.depositAmount}
+                    onChange={e => setFormData({ ...formData, depositAmount: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    placeholder="VD: 15000000"
                   />
                 </div>
 
