@@ -130,16 +130,18 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
     setIsGeneratingPDF(true);
     setPrintingBooking(bookingToShare); // Temporarily open print view so we can capture it
 
-    // Give it a short delay to render the DOM
+    // Give it a slightly longer delay to ensure React finishes rendering the DOM
     setTimeout(async () => {
       try {
-        const contractEl = document.getElementById('print-contract-preview');
+        const contractEl = document.getElementById('print-contract-preview-content');
         if (!contractEl) throw new Error('Không tìm thấy giao diện hợp đồng');
 
+        // Capture with better quality settings
         const canvas = await html2canvas(contractEl, {
           scale: 2,
           useCORS: true,
-          logging: false
+          logging: false,
+          windowWidth: 800 // Force standard width for PDF
         });
 
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
@@ -182,7 +184,7 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
         setIsGeneratingPDF(false);
         setPrintingBooking(null); // Hide print view again
       }
-    }, 500);
+    }, 800);
   };
 
 
@@ -727,7 +729,7 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
 
       {/* Print View for Existing Booking */}
       {printingBooking && (
-        <div id="print-contract-preview" className={`fixed inset-0 bg-white z-[100] overflow-auto print:static print:block ${isGeneratingPDF ? 'opacity-0 pointer-events-none' : ''}`}>
+        <div className={`fixed inset-0 bg-white z-[100] overflow-auto print:static print:block ${isGeneratingPDF ? 'opacity-0 pointer-events-none' : ''}`}>
           <div className="print:hidden p-4 flex justify-end bg-slate-100 border-b">
             <button
               onClick={() => setPrintingBooking(null)}
@@ -736,11 +738,13 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
               <X size={20} /> Đóng
             </button>
           </div>
-          <ContractPreview
-            booking={printingBooking}
-            car={cars.find(c => c.id === printingBooking.carId)}
-            lessorData={lessorData}
-          />
+          <div id="print-contract-preview-content" className="bg-white">
+            <ContractPreview
+              booking={printingBooking}
+              car={cars.find(c => c.id === printingBooking.carId)}
+              lessorData={lessorData}
+            />
+          </div>
         </div>
       )}
       {/* Handover Modal */}
