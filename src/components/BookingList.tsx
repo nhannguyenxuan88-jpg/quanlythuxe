@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Booking, Car as CarType, BookingStatus } from '../data/mock';
-import { Plus, Search, Filter, Calendar as CalendarIcon, MoreVertical, Edit, Trash2, Printer, X, Image as ImageIcon, Download, ClipboardCheck } from 'lucide-react';
+import { Plus, Search, Filter, Calendar as CalendarIcon, MoreVertical, Edit, Trash2, Printer, X, Image as ImageIcon, Download, ClipboardCheck, FileText } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { format, differenceInDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -492,16 +492,33 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-100/50 space-y-6">
-              {viewingDocuments.contractUrl && (
-                <div className="space-y-2">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
                   <h4 className="font-semibold text-slate-700 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Bản chụp Hợp Đồng đã ký
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Hợp Đồng Cho Thuê
                   </h4>
-                  <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
-                    <img src={viewingDocuments.contractUrl} alt="Hợp đồng điện tử" className="w-full h-auto rounded-lg" />
-                  </div>
+                  <button
+                    onClick={() => {
+                      setPrintingBooking(viewingDocuments);
+                      setViewingDocuments(null);
+                    }}
+                    className="text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
+                  >
+                    <Printer size={16} /> Xem Bản in / Hợp đồng
+                  </button>
                 </div>
-              )}
+                {viewingDocuments.contractUrl ? (
+                  <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+                    <img src={viewingDocuments.contractUrl} alt="Hợp đồng điện tử chụp" className="w-full h-auto rounded-lg" />
+                  </div>
+                ) : (
+                  <div className="bg-white p-6 rounded-xl border border-slate-200 border-dashed text-center">
+                    <FileText size={36} className="mx-auto text-slate-300 mb-2" />
+                    <p className="text-slate-500 text-sm mb-1">Không có bản chụp Hợp đồng đính kèm.</p>
+                    <p className="text-slate-600 text-sm">Vui lòng bấm <strong>Xem Bản in</strong> để đọc lại nội dung Hợp đồng.</p>
+                  </div>
+                )}
+              </div>
 
               {(viewingDocuments.customerIdFront || viewingDocuments.customerIdBack) && (
                 <div className="space-y-3">
