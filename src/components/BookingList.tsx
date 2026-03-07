@@ -136,12 +136,14 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
         const contractEl = document.getElementById('print-contract-preview-content');
         if (!contractEl) throw new Error('Không tìm thấy giao diện hợp đồng');
 
-        // Capture with better quality settings
+        // Capture with better quality settings and full height
         const canvas = await html2canvas(contractEl, {
           scale: 2,
           useCORS: true,
           logging: false,
-          windowWidth: 800 // Force standard width for PDF
+          windowWidth: 800, // Force standard width for PDF
+          windowHeight: contractEl.scrollHeight, // Force capture of full vertical height
+          height: contractEl.scrollHeight // Ensure canvas takes the full height of the content
         });
 
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
@@ -152,9 +154,26 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
         });
 
         const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const canvasImgWidth = canvas.width;
+        const canvasImgHeight = canvas.height;
+        const ratio = pdfWidth / canvasImgWidth;
+        const imgHeightPx = canvasImgHeight * ratio;
 
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+        let heightLeft = imgHeightPx;
+        let position = 0;
+
+        // Add first page
+        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeightPx);
+        heightLeft -= pageHeight;
+
+        // Add subsequent pages if needed
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeightPx;
+          pdf.addPage();
+          pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeightPx);
+          heightLeft -= pageHeight;
+        }
 
         const pdfBlob = pdf.output('blob');
         const file = new File([pdfBlob], `Hop_Dong_${bookingToShare.customerName.replace(/ /g, '_')}.pdf`, { type: 'application/pdf' });
