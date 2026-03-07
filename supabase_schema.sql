@@ -55,7 +55,7 @@ create table if not exists public.bookings (
     rental_purpose text,
     payment_method text,
     payment_date text,
-    deposit_amount numeric,
+    deposit_amount text,
     contract_location text,
     customer_id_front text, -- Ảnh mặt trước CCCD
     customer_id_back text, -- Ảnh mặt sau CCCD

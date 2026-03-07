@@ -41,7 +41,7 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
     rentalPurpose: 'Du lịch - Công tác',
     paymentMethod: 'Chuyển khoản',
     paymentDate: new Date().toLocaleDateString('vi-VN'),
-    depositAmount: 15000000,
+    depositAmount: '15,000,000 VNĐ',
     contractLocation: '',
     carId: '',
     startDate: new Date().toISOString().slice(0, 16),
@@ -375,13 +375,13 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Tiền cọc thế chấp (VNĐ)</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Tài sản cọc thế chấp</label>
                   <input
-                    type="number"
+                    type="text"
                     value={formData.depositAmount}
-                    onChange={e => setFormData({ ...formData, depositAmount: Number(e.target.value) })}
+                    onChange={e => setFormData({ ...formData, depositAmount: e.target.value })}
                     className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                    placeholder="VD: 15000000"
+                    placeholder="VD: 15 triệu VNĐ hoặc 1 chiếc xe máy Vision..."
                   />
                 </div>
 

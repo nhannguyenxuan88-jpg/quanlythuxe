@@ -39,7 +39,7 @@ export interface Booking {
   rentalPurpose?: string;
   paymentMethod?: string;
   paymentDate?: string;
-  depositAmount?: number;
+  depositAmount?: string;
   contractLocation?: string;
   customerIdFront?: string; // Ảnh mặt trước CCCD
   customerIdBack?: string;  // Ảnh mặt sau CCCD
