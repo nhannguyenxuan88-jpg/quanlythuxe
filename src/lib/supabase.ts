@@ -99,6 +99,16 @@ export function mapBookingToDb(booking: any): any {
     if (booking.totalAmount !== undefined) { dbBooking.total_amount = booking.totalAmount; delete dbBooking.totalAmount; }
     if (booking.customerIdFront !== undefined) { dbBooking.customer_id_front = booking.customerIdFront; delete dbBooking.customerIdFront; }
     if (booking.customerIdBack !== undefined) { dbBooking.customer_id_back = booking.customerIdBack; delete dbBooking.customerIdBack; }
+    if (booking.customerLicenseFront !== undefined) { dbBooking.customer_license_front = booking.customerLicenseFront; delete dbBooking.customerLicenseFront; }
+    if (booking.customerLicenseBack !== undefined) { dbBooking.customer_license_back = booking.customerLicenseBack; delete dbBooking.customerLicenseBack; }
     if (booking.contractUrl !== undefined) { dbBooking.contract_url = booking.contractUrl; delete dbBooking.contractUrl; }
+
+    // Strip blob: URLs (temporary local previews) - they can't be stored and cause errors
+    for (const key of Object.keys(dbBooking)) {
+        if (typeof dbBooking[key] === 'string' && dbBooking[key].startsWith('blob:')) {
+            delete dbBooking[key];
+        }
+    }
+
     return dbBooking;
 }

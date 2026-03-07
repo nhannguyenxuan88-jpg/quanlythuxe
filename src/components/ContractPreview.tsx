@@ -14,6 +14,17 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
   const signatureRef = useRef<SignatureCanvas>(null);
   const [signatureData, setSignatureData] = useState<string | null>(null);
 
+  // Helper: format date string to dd/mm/yyyy
+  const formatViDate = (dateStr?: string) => {
+    if (!dateStr) return '....................';
+    // Already in dd/mm/yyyy format
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return dateStr;
+    // ISO yyyy-mm-dd or yyyy-mm-ddThh:mm
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+  };
+
   const lessorSignatureRef = useRef<SignatureCanvas>(null);
   const [lessorSignatureData, setLessorSignatureData] = useState<string | null>(null);
 
@@ -65,7 +76,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
           <div>Ông/Bà: <strong>{booking.customerName || '........................................'}</strong></div>
           <div>Sinh năm: <strong>{booking.customerYearOfBirth || '.................'}</strong></div>
         </div>
-        <div className="pl-4">CMND/CCCD/Hộ chiếu số: <strong>{booking.customerCCCD || '......................................'}</strong> do <strong>{booking.customerCccdPlace || '....................'}</strong> cấp ngày <strong>{booking.customerCccdDate || '....................'}</strong></div>
+        <div className="pl-4">CMND/CCCD/Hộ chiếu số: <strong>{booking.customerCCCD || '......................................'}</strong> do <strong>{booking.customerCccdPlace || '....................'}</strong> cấp ngày <strong>{formatViDate(booking.customerCccdDate)}</strong></div>
         <div className="pl-4">Hộ khẩu thường trú tại: {booking.customerAddress || '...................................................................................'}</div>
         <div className="pl-4">Điện thoại: {booking.customerPhone || '......................................'}</div>
 
@@ -90,7 +101,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
           - Bên A cam đoan trước khi ký bản Hợp đồng này, xe ô tô nêu trên:<br />
           &nbsp;&nbsp;+ Không có tranh chấp về quyền sở hữu/sử dụng;<br />
           &nbsp;&nbsp;+ Không bị ràng buộc bởi bất kỳ Hợp đồng thuê xe ô tô nào đang có hiệu lực.<br />
-          - Bên B cam đoan: Bên B được cấp giấy phép lái xe hạng <strong>{booking.customerLicenseClass || '...........'}</strong> số <strong>{booking.customerLicenseNumber || '....................'}</strong> có giá trị đến ngày <strong>{booking.customerLicenseExpiry || '........................'}</strong> (nếu bên B với tư cách cá nhân)
+          - Bên B cam đoan: Bên B được cấp giấy phép lái xe hạng <strong>{booking.customerLicenseClass || '...........'}</strong> số <strong>{booking.customerLicenseNumber || '....................'}</strong> có giá trị đến ngày <strong>{formatViDate(booking.customerLicenseExpiry)}</strong> (nếu bên B với tư cách cá nhân)
         </div>
 
         <div className="font-bold mt-4">Điều 2. Thời hạn thuê xe ô tô</div>
