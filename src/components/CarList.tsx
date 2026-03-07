@@ -122,18 +122,12 @@ export function CarList({ cars, onAddCar, onUpdateCar, onDeleteCar }: CarListPro
                   <td className="p-4 text-slate-600">{car.year}</td>
                   <td className="p-4 font-medium text-slate-900">{formatCurrency(car.pricePerDay)}</td>
                   <td className="p-4">
-                    <select
-                      value={car.status}
-                      onChange={(e) => onUpdateCar(car.id, { status: e.target.value as CarStatus })}
-                      className={cn(
-                        "appearance-none cursor-pointer outline-none inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border focus:ring-2 focus:ring-indigo-500 transition-colors",
-                        getStatusColor(car.status)
-                      )}
-                    >
-                      <option value="available" className="bg-white text-slate-900 font-sans">Sẵn sàng</option>
-                      <option value="rented" className="bg-white text-slate-900 font-sans">Đang thuê</option>
-                      <option value="maintenance" className="bg-white text-slate-900 font-sans">Bảo dưỡng</option>
-                    </select>
+                    <span className={cn(
+                      "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border",
+                      getStatusColor(car.status)
+                    )}>
+                      {getStatusLabel(car.status)}
+                    </span>
                   </td>
                   <td className="p-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -208,18 +202,12 @@ export function CarList({ cars, onAddCar, onUpdateCar, onDeleteCar }: CarListPro
                     <p className="text-xs text-slate-500 font-medium mb-0.5">Giá thuê/ngày</p>
                     <p className="font-bold text-indigo-600 leading-none">{formatCurrency(car.pricePerDay)}</p>
                   </div>
-                  <select
-                    value={car.status}
-                    onChange={(e) => onUpdateCar(car.id, { status: e.target.value as CarStatus })}
-                    className={cn(
-                      "appearance-none cursor-pointer outline-none inline-flex items-center px-4 py-2 rounded-xl text-xs font-semibold border focus:ring-2 focus:ring-indigo-500 transition-colors shadow-sm",
-                      getStatusColor(car.status)
-                    )}
-                  >
-                    <option value="available" className="bg-white text-slate-900 font-sans">Sẵn sàng</option>
-                    <option value="rented" className="bg-white text-slate-900 font-sans">Đang thuê</option>
-                    <option value="maintenance" className="bg-white text-slate-900 font-sans">Bảo dưỡng</option>
-                  </select>
+                  <span className={cn(
+                    "inline-flex items-center px-4 py-2 rounded-xl text-xs font-semibold border shadow-sm",
+                    getStatusColor(car.status)
+                  )}>
+                    {getStatusLabel(car.status)}
+                  </span>
                 </div>
               </div>
             ))}
