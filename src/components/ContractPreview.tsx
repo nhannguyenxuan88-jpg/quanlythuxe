@@ -40,7 +40,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
   };
 
   return (
-    <div ref={ref} className="bg-white p-4 sm:p-8 text-black max-w-4xl mx-auto print:p-0 print:m-0 text-sm leading-relaxed" style={{ fontFamily: '"Times New Roman", Times, serif' }}>
+    <div ref={ref} className="p-4 sm:p-8 max-w-4xl mx-auto print:p-0 print:m-0 text-sm leading-relaxed" style={{ fontFamily: '"Times New Roman", Times, serif', backgroundColor: '#ffffff', color: '#000000' }}>
       <div className="text-center mb-6 relative">
         <h2 className="font-bold text-lg uppercase">Cộng Hòa Xã Hội Chủ Nghĩa Việt Nam</h2>
         <h3 className="font-bold text-base underline">Độc lập – Tự do – Hạnh phúc</h3>
@@ -90,7 +90,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
           - Bên A cam đoan trước khi ký bản Hợp đồng này, xe ô tô nêu trên:<br />
           &nbsp;&nbsp;+ Không có tranh chấp về quyền sở hữu/sử dụng;<br />
           &nbsp;&nbsp;+ Không bị ràng buộc bởi bất kỳ Hợp đồng thuê xe ô tô nào đang có hiệu lực.<br />
-          - Bên B cam đoan: Bên B được cấp giấy phép lái xe hạng ........... số .................... có giá trị đến ngày ........................ (nếu bên B với tư cách cá nhân)
+          - Bên B cam đoan: Bên B được cấp giấy phép lái xe hạng <strong>{booking.customerLicenseClass || '...........'}</strong> số <strong>{booking.customerLicenseNumber || '....................'}</strong> có giá trị đến ngày <strong>{booking.customerLicenseExpiry || '........................'}</strong> (nếu bên B với tư cách cá nhân)
         </div>
 
         <div className="font-bold mt-4">Điều 2. Thời hạn thuê xe ô tô</div>
@@ -99,13 +99,13 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
         </p>
 
         <div className="font-bold mt-4">Điều 3. Mục đích thuê</div>
-        <p>Bên B sử dụng tài sản thuê nêu trên vào mục đích đi ..............................................................</p>
+        <p>Bên B sử dụng tài sản thuê nêu trên vào mục đích đi <strong>{booking.rentalPurpose || '..............................................................'}</strong></p>
 
         <div className="font-bold mt-4">Điều 4: Giá thuê và phương thức thanh toán</div>
         <p>1. Giá thuê tài sản nêu trên là: <strong>{booking.totalAmount ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(booking.totalAmount) : '......................'}</strong></p>
-        <p>2. Phương thức thanh toán: Thanh toán bằng ........................ và Bên B phải thanh toán cho Bên A số tiền thuê xe ô tô nêu trên vào ngày ........................</p>
+        <p>2. Phương thức thanh toán: Thanh toán bằng <strong>{booking.paymentMethod || '........................'}</strong> và Bên B phải thanh toán cho Bên A số tiền thuê xe ô tô nêu trên vào ngày <strong>{booking.paymentDate || '........................'}</strong></p>
         <p>3. Việc giao và nhận số tiền nêu trên do hai bên tự thực hiện và chịu trách nhiệm trước pháp luật.</p>
-        <p>4. Bên B cọc là {(booking as any).deposit ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format((booking as any).deposit) : '......................'} thế chấp, Bên A phải hoàn trả số tiền này ngay khi nhận lại xe.</p>
+        <p>4. Bên B cọc là <strong>{booking.depositAmount ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(booking.depositAmount) : '......................'}</strong> thế chấp, Bên A phải hoàn trả số tiền này ngay khi nhận lại xe.</p>
 
         <div className="font-bold mt-4">Điều 5: Phương thức giao, trả lại tài sản thuê</div>
         <p>Hết thời hạn thuê nêu trên, Bên B phải giao trả chiếc xe ô tô trên cho Bên A.</p>
@@ -163,7 +163,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
       <div className="flex justify-between mt-12 pt-8">
         <div className="text-center w-1/2 relative flex flex-col items-center">
           <p className="font-bold uppercase">BÊN CHO THUÊ</p>
-          <div className="h-40 w-full max-w-[250px] relative flex flex-col items-center justify-center border-b border-dashed border-gray-300 print:border-none my-2">
+          <div className="h-40 w-full max-w-[250px] relative flex flex-col items-center justify-center border-b border-dashed print:border-none my-2" style={{ borderColor: '#d1d5db' }}>
             <div className="print:hidden w-full h-full cursor-crosshair touch-none select-none">
               <SignatureCanvas
                 ref={lessorSignatureRef}
@@ -175,14 +175,15 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
             {lessorSignatureData && (
               <img src={lessorSignatureData} alt="Lessor Signature" className="absolute select-none pointer-events-none w-full h-full object-contain drop-shadow-sm opacity-0 print:opacity-100" />
             )}
-            {!lessorSignatureData && <span className="absolute text-gray-300 select-none pointer-events-none text-xs print:hidden">(Chủ xe ký tại đây)</span>}
+            {!lessorSignatureData && <span className="absolute select-none pointer-events-none text-xs print:hidden" style={{ color: '#d1d5db' }}>(Chủ xe ký tại đây)</span>}
           </div>
           {/* Action button hidden during print */}
           <div className="absolute top-10 -right-4 print:hidden">
             <button
               onClick={handleClearLessorSignature}
               title="Xoá chữ ký"
-              className="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full transition-colors shadow-sm"
+              className="p-1.5 hover:bg-gray-200 rounded-full transition-colors shadow-sm"
+              style={{ backgroundColor: '#f3f4f6', color: '#4b5563' }}
               type="button"
             >
               <Eraser size={16} />
@@ -193,7 +194,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
 
         <div className="text-center w-1/2 relative flex flex-col items-center">
           <p className="font-bold uppercase">BÊN THUÊ</p>
-          <div className="h-40 w-full max-w-[250px] relative flex flex-col items-center justify-center border-b border-dashed border-gray-300 print:border-none my-2">
+          <div className="h-40 w-full max-w-[250px] relative flex flex-col items-center justify-center border-b border-dashed print:border-none my-2" style={{ borderColor: '#d1d5db' }}>
             <div className="print:hidden w-full h-full cursor-crosshair touch-none select-none">
               <SignatureCanvas
                 ref={signatureRef}
@@ -205,14 +206,15 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
             {signatureData && (
               <img src={signatureData} alt="Client Signature" className="absolute select-none pointer-events-none w-full h-full object-contain drop-shadow-sm opacity-0 print:opacity-100" />
             )}
-            {!signatureData && <span className="absolute text-gray-300 select-none pointer-events-none text-xs print:hidden">(Khách hàng ký tại đây)</span>}
+            {!signatureData && <span className="absolute select-none pointer-events-none text-xs print:hidden" style={{ color: '#d1d5db' }}>(Khách hàng ký tại đây)</span>}
           </div>
           {/* Action button hidden during print */}
           <div className="absolute top-10 -right-4 print:hidden">
             <button
               onClick={handleClearSignature}
               title="Xoá chữ ký"
-              className="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full transition-colors shadow-sm"
+              className="p-1.5 hover:bg-gray-200 rounded-full transition-colors shadow-sm"
+              style={{ backgroundColor: '#f3f4f6', color: '#4b5563' }}
               type="button"
             >
               <Eraser size={16} />
