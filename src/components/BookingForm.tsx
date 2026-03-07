@@ -13,7 +13,21 @@ interface BookingFormProps {
 }
 
 export function BookingForm({ cars, onSave, onCancel, initialData }: BookingFormProps) {
-  const [formData, setFormData] = useState<Partial<Booking>>(() => initialData ? { ...initialData } : {
+  // Normalize date string to datetime-local format (yyyy-MM-ddTHH:mm)
+  const toDatetimeLocal = (dateStr?: string) => {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toISOString().slice(0, 16);
+    } catch { return dateStr; }
+  };
+
+  const [formData, setFormData] = useState<Partial<Booking>>(() => initialData ? {
+    ...initialData,
+    startDate: toDatetimeLocal(initialData.startDate),
+    endDate: toDatetimeLocal(initialData.endDate),
+  } : {
     customerName: '',
     customerPhone: '',
     customerYearOfBirth: '',
