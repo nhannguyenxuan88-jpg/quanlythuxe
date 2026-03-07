@@ -378,6 +378,28 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                   </div>
                 </div>
               )}
+
+              {(viewingDocuments.customerLicenseFront || viewingDocuments.customerLicenseBack) && (
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-slate-700 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Giấy phép lái xe (GPLX)
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {viewingDocuments.customerLicenseFront && (
+                      <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+                        <p className="text-xs font-medium text-slate-500 mb-2 px-1">Mặt trước</p>
+                        <img src={viewingDocuments.customerLicenseFront} alt="GPLX Mặt Trước" className="w-full h-auto rounded-lg object-contain bg-slate-50" />
+                      </div>
+                    )}
+                    {viewingDocuments.customerLicenseBack && (
+                      <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+                        <p className="text-xs font-medium text-slate-500 mb-2 px-1">Mặt sau</p>
+                        <img src={viewingDocuments.customerLicenseBack} alt="GPLX Mặt Sau" className="w-full h-auto rounded-lg object-contain bg-slate-50" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
