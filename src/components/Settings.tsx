@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Save, Building2, User, CreditCard } from 'lucide-react';
+import { Save, User, CreditCard, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { supabase } from '../lib/supabase';
 
 interface LessorInfo {
     name: string;
@@ -27,19 +28,64 @@ const defaultLessorInfo: LessorInfo = {
 };
 
 export function Settings() {
-    const [lessorInfo, setLessorInfo] = useState<LessorInfo>(() => {
-        const saved = localStorage.getItem('lessorInfo');
-        return saved ? JSON.parse(saved) : defaultLessorInfo;
-    });
+    const [lessorInfo, setLessorInfo] = useState<LessorInfo>(defaultLessorInfo);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
 
-    const handleSave = () => {
-        localStorage.setItem('lessorInfo', JSON.stringify(lessorInfo));
-        toast.success('Đã lưu cài đặt thành công!');
+    // Load from Supabase on mount
+    useEffect(() => {
+        const loadSettings = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('settings')
+                    .select('*')
+                    .eq('key', 'lessor_info')
+                    .single();
+
+                if (data && !error) {
+                    setLessorInfo({ ...defaultLessorInfo, ...data.value });
+                }
+            } catch (err) {
+                // Table might not exist yet, use defaults
+                console.log('Settings not found, using defaults');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadSettings();
+    }, []);
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            const { error } = await supabase
+                .from('settings')
+                .upsert(
+                    { key: 'lessor_info', value: lessorInfo, updated_at: new Date().toISOString() },
+                    { onConflict: 'key' }
+                );
+
+            if (error) throw error;
+            toast.success('Đã lưu cài đặt lên hệ thống!');
+        } catch (err: any) {
+            toast.error('Lỗi khi lưu: ' + err.message);
+            console.error(err);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('vi-VN').format(amount);
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[40vh]">
+                <Loader2 className="animate-spin text-indigo-600" size={32} />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 max-w-2xl">
@@ -56,7 +102,7 @@ export function Settings() {
                     </div>
                     <div>
                         <h3 className="font-semibold text-slate-900">Thông tin Bên A (Chủ xe)</h3>
-                        <p className="text-xs text-slate-500">Hiển thị trên Hợp đồng thuê xe</p>
+                        <p className="text-xs text-slate-500">Hiển thị trên Hợp đồng thuê xe • Lưu trên đám mây</p>
                     </div>
                 </div>
                 <div className="p-6 space-y-4">
@@ -172,10 +218,11 @@ export function Settings() {
 
             <button
                 onClick={handleSave}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors w-full justify-center"
+                disabled={isSaving}
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors w-full justify-center"
             >
-                <Save size={20} />
-                Lưu cài đặt
+                {isSaving ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
+                {isSaving ? 'Đang lưu...' : 'Lưu cài đặt'}
             </button>
         </div>
     );

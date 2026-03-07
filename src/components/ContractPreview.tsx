@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useState } from 'react';
+import { forwardRef, useRef, useState, useEffect } from 'react';
 import { Booking, Car } from '../data/mock';
 import { format } from 'date-fns';
 import SignatureCanvas from 'react-signature-canvas';
@@ -14,20 +14,24 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
   const signatureRef = useRef<SignatureCanvas>(null);
   const [signatureData, setSignatureData] = useState<string | null>(null);
 
-  // Load lessor info from Settings
-  const lessorInfo = (() => {
-    try {
-      const saved = localStorage.getItem('lessorInfo');
-      return saved ? JSON.parse(saved) : null;
-    } catch { return null; }
-  })();
-  const lessorName = lessorInfo?.name || 'HOÀNG BÁ NGUYÊN';
-  const lessorYearOfBirth = lessorInfo?.yearOfBirth || '1991';
-  const lessorCccd = lessorInfo?.cccd || '066091019537';
-  const lessorCccdDate = lessorInfo?.cccdDate || '27/11/2024';
-  const lessorCccdPlace = lessorInfo?.cccdPlace || 'BỘ CÔNG AN';
-  const lessorTempAddress = lessorInfo?.tempAddress || 'tổ 08 ấp nam phường TAM LONG thành phố HCM';
-  const lessorPermanentAddress = lessorInfo?.permanentAddress || 'số nhà 77, Thôn 11, Xã PHÚ XUÂN, tỉnh ĐĂK LĂK';
+  // Load lessor info from Supabase settings
+  const [lessorData, setLessorData] = useState<any>(null);
+  useEffect(() => {
+    (async () => {
+      try {
+        const { supabase } = await import('../lib/supabase');
+        const { data } = await supabase.from('settings').select('*').eq('key', 'lessor_info').single();
+        if (data) setLessorData(data.value);
+      } catch { }
+    })();
+  }, []);
+  const lessorName = lessorData?.name || 'HOÀNG BÁ NGUYÊN';
+  const lessorYearOfBirth = lessorData?.yearOfBirth || '1991';
+  const lessorCccd = lessorData?.cccd || '066091019537';
+  const lessorCccdDate = lessorData?.cccdDate || '27/11/2024';
+  const lessorCccdPlace = lessorData?.cccdPlace || 'BỘ CÔNG AN';
+  const lessorTempAddress = lessorData?.tempAddress || 'tổ 08 ấp nam phường TAM LONG thành phố HCM';
+  const lessorPermanentAddress = lessorData?.permanentAddress || 'số nhà 77, Thôn 11, Xã PHÚ XUÂN, tỉnh ĐĂK LĂK';
 
   // Helper: format date string to dd/mm/yyyy
   const formatViDate = (dateStr?: string) => {

@@ -144,3 +144,24 @@ create policy "Cho phép mọi người xem tài liệu" on storage.objects
 drop policy if exists "Cho phép quản trị xóa tài liệu" on storage.objects;
 create policy "Cho phép quản trị xóa tài liệu" on storage.objects 
   for delete using ( bucket_id = 'booking_documents' );
+
+-- 4. Bảng cài đặt (settings) - lưu thông tin Bên A cho hợp đồng
+create table if not exists public.settings (
+    id uuid default uuid_generate_v4() primary key,
+    key text not null unique,
+    value jsonb not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- RLS cho settings
+alter table public.settings enable row level security;
+
+drop policy if exists "Cho phép đọc settings" on public.settings;
+create policy "Cho phép đọc settings" on public.settings for select using (true);
+
+drop policy if exists "Cho phép ghi settings" on public.settings;
+create policy "Cho phép ghi settings" on public.settings for insert with check (true);
+
+drop policy if exists "Cho phép sửa settings" on public.settings;
+create policy "Cho phép sửa settings" on public.settings for update using (true);
