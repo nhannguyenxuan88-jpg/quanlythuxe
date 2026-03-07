@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Booking, Car as CarType, BookingStatus } from '../data/mock';
-import { Plus, Search, Filter, Calendar as CalendarIcon, MoreVertical, Edit, Trash2, Printer, X, Image as ImageIcon } from 'lucide-react';
+import { Plus, Search, Filter, Calendar as CalendarIcon, MoreVertical, Edit, Trash2, Printer, X, Image as ImageIcon, Download } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { format, differenceInDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -18,6 +18,8 @@ interface BookingListProps {
 export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onDeleteBooking }: BookingListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [printingBooking, setPrintingBooking] = useState<Booking | null>(null);
@@ -31,7 +33,19 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
         car.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
         car.model.toLowerCase().includes(searchTerm.toLowerCase())));
     const matchesStatus = statusFilter === 'all' || booking.status === statusFilter;
-    return matchesSearch && matchesStatus;
+
+    // Date range filter
+    let matchesDate = true;
+    if (dateFrom) {
+      matchesDate = matchesDate && new Date(booking.startDate) >= new Date(dateFrom);
+    }
+    if (dateTo) {
+      const toEnd = new Date(dateTo);
+      toEnd.setHours(23, 59, 59, 999);
+      matchesDate = matchesDate && new Date(booking.startDate) <= toEnd;
+    }
+
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
   const getStatusColor = (status: BookingStatus) => {
@@ -65,6 +79,33 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
     }, 100);
   };
 
+  const handleExportCSV = () => {
+    const statusMap: Record<string, string> = { active: 'Đang chạy', completed: 'Hoàn thành', cancelled: 'Đã hủy' };
+    const headers = ['Khách hàng', 'SĐT', 'Xe thuê', 'Biển số', 'Từ ngày', 'Đến ngày', 'Tổng tiền', 'Trạng thái'];
+    const rows = filteredBookings.map(b => {
+      const car = cars.find(c => c.id === b.carId);
+      return [
+        b.customerName,
+        b.customerPhone,
+        `${car?.brand || ''} ${car?.model || ''}`,
+        car?.plate || '',
+        formatDate(b.startDate),
+        formatDate(b.endDate),
+        b.totalAmount.toString(),
+        statusMap[b.status] || b.status
+      ].map(v => `"${v}"`).join(',');
+    });
+    const bom = '\uFEFF';
+    const csv = bom + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `don_thue_xe_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
@@ -72,13 +113,22 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
           <h2 className="text-2xl font-bold text-slate-900">Đơn thuê xe</h2>
           <p className="text-slate-500 mt-1">Quản lý các hợp đồng cho thuê</p>
         </div>
-        <button
-          onClick={() => setIsAdding(true)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-colors"
-        >
-          <Plus size={20} />
-          Tạo đơn mới
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleExportCSV}
+            className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-colors border border-emerald-200"
+          >
+            <Download size={18} />
+            Xuất Excel
+          </button>
+          <button
+            onClick={() => setIsAdding(true)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-colors"
+          >
+            <Plus size={20} />
+            Tạo đơn mới
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden print:hidden">
@@ -105,6 +155,24 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
               <option value="completed">Hoàn thành</option>
               <option value="cancelled">Đã hủy</option>
             </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+              title="Từ ngày"
+            />
+            <span className="text-slate-400 text-sm">-</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+              title="Đến ngày"
+            />
           </div>
         </div>
 

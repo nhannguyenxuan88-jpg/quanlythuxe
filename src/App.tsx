@@ -5,6 +5,7 @@ import { Dashboard } from './components/Dashboard';
 import { CarList } from './components/CarList';
 import { BookingList } from './components/BookingList';
 import { CustomerList } from './components/CustomerList';
+import { Settings } from './components/Settings';
 import { BottomNav } from './components/BottomNav';
 import { Car, Booking } from './data/mock';
 import { supabase, mapDbToCar, mapCarToDb, mapDbToBooking, mapBookingToDb } from './lib/supabase';
@@ -203,13 +204,9 @@ export default function App() {
           />
         );
       case 'customers':
-        return <CustomerList bookings={bookings} />;
+        return <CustomerList bookings={bookings} cars={cars} />;
       case 'settings':
-        return (
-          <div className="flex items-center justify-center h-full text-slate-500">
-            Tính năng cài đặt đang được phát triển.
-          </div>
-        );
+        return <Settings />;
       default:
         return <Dashboard cars={cars} bookings={bookings} />;
     }

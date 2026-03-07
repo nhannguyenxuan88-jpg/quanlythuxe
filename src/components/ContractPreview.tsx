@@ -14,6 +14,21 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
   const signatureRef = useRef<SignatureCanvas>(null);
   const [signatureData, setSignatureData] = useState<string | null>(null);
 
+  // Load lessor info from Settings
+  const lessorInfo = (() => {
+    try {
+      const saved = localStorage.getItem('lessorInfo');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  })();
+  const lessorName = lessorInfo?.name || 'HOÀNG BÁ NGUYÊN';
+  const lessorYearOfBirth = lessorInfo?.yearOfBirth || '1991';
+  const lessorCccd = lessorInfo?.cccd || '066091019537';
+  const lessorCccdDate = lessorInfo?.cccdDate || '27/11/2024';
+  const lessorCccdPlace = lessorInfo?.cccdPlace || 'BỘ CÔNG AN';
+  const lessorTempAddress = lessorInfo?.tempAddress || 'tổ 08 ấp nam phường TAM LONG thành phố HCM';
+  const lessorPermanentAddress = lessorInfo?.permanentAddress || 'số nhà 77, Thôn 11, Xã PHÚ XUÂN, tỉnh ĐĂK LĂK';
+
   // Helper: format date string to dd/mm/yyyy
   const formatViDate = (dateStr?: string) => {
     if (!dateStr) return '....................';
@@ -64,12 +79,12 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
 
         <div className="font-bold uppercase mt-2">BÊN CHO THUÊ (sau đây gọi là Bên A)</div>
         <div className="grid grid-cols-2 gap-2 pl-4">
-          <div>Ông: <strong>HOÀNG BÁ NGUYÊN</strong></div>
-          <div>Sinh năm: 1991</div>
+          <div>Ông: <strong>{lessorName}</strong></div>
+          <div>Sinh năm: {lessorYearOfBirth}</div>
         </div>
-        <div className="pl-4">CMND/CCCD/ Hộ chiếu số: 066091019537 do BỘ CÔNG AN cấp ngày 27/11/2024</div>
-        <div className="pl-4">Tạm trú tại: tổ 08 ấp nam phường TAM LONG thành phố HCM</div>
-        <div className="pl-4">Thường trú: số nhà 77, Thôn 11, Xã PHÚ XUÂN, tỉnh ĐĂK LĂK</div>
+        <div className="pl-4">CMND/CCCD/ Hộ chiếu số: {lessorCccd} do {lessorCccdPlace} cấp ngày {lessorCccdDate}</div>
+        <div className="pl-4">Tạm trú tại: {lessorTempAddress}</div>
+        <div className="pl-4">Thường trú: {lessorPermanentAddress}</div>
 
         <div className="font-bold uppercase mt-4">BÊN THUÊ (Sau đây gọi tắt là Bên B)</div>
         <div className="grid grid-cols-2 gap-2 pl-4">
