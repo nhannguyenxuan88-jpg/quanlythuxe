@@ -377,39 +377,72 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                    <div>
-                      <p className="text-xs text-slate-500 font-medium">Tổng ({days} ngày)</p>
-                      <p className="font-bold text-indigo-600 text-lg leading-tight mt-0.5">{formatCurrency(booking.totalAmount)}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-                      {hasDocs && (
+                  <div className="flex flex-col gap-3 pt-3 border-t border-slate-100">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-slate-500 font-medium">Tổng ({days} ngày)</p>
+                        <p className="font-bold text-indigo-600 text-lg leading-tight mt-0.5">{formatCurrency(booking.totalAmount)}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                        {hasDocs && (
+                          <button
+                            onClick={() => setViewingDocuments(booking)}
+                            className="min-w-[40px] w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm"
+                            title="Xem tài liệu"
+                          >
+                            <ImageIcon size={18} />
+                          </button>
+                        )}
                         <button
-                          onClick={() => setViewingDocuments(booking)}
+                          onClick={() => handlePrintExisting(booking)}
                           className="min-w-[40px] w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm"
-                          title="Xem tài liệu"
                         >
-                          <ImageIcon size={18} />
+                          <Printer size={18} />
+                        </button>
+                        <button
+                          onClick={() => setEditingBooking(booking)}
+                          className="min-w-[40px] w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          onClick={() => onDeleteBooking(booking.id)}
+                          className="min-w-[40px] w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Mobile Handover Buttons */}
+                    <div className="flex flex-col gap-2">
+                      {booking.status === 'active' && !booking.checkOutTime && (
+                        <button
+                          onClick={() => setHandoverBooking({ booking, type: 'checkout' })}
+                          className="w-full text-sm bg-amber-50 hover:bg-amber-100 text-amber-700 py-2.5 flex items-center justify-center gap-2 rounded-xl font-medium border border-amber-200 transition-colors"
+                        >
+                          <ClipboardCheck size={16} /> Giao xe
                         </button>
                       )}
-                      <button
-                        onClick={() => handlePrintExisting(booking)}
-                        className="min-w-[40px] w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm"
-                      >
-                        <Printer size={18} />
-                      </button>
-                      <button
-                        onClick={() => setEditingBooking(booking)}
-                        className="min-w-[40px] w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm"
-                      >
-                        <Edit size={18} />
-                      </button>
-                      <button
-                        onClick={() => onDeleteBooking(booking.id)}
-                        className="min-w-[40px] w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-slate-100 bg-white transition-colors shadow-sm"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                      {booking.status === 'active' && booking.checkOutTime && !booking.checkInTime && (
+                        <button
+                          onClick={() => setHandoverBooking({ booking, type: 'checkin' })}
+                          className="w-full text-sm bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2.5 flex items-center justify-center gap-2 rounded-xl font-medium border border-indigo-200 transition-colors"
+                        >
+                          <ClipboardCheck size={16} /> Nhận xe
+                        </button>
+                      )}
+                      {(booking.checkOutTime || booking.checkInTime) && (
+                        <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-medium flex items-center gap-1.5">
+                            <ClipboardCheck size={14} className="text-slate-400" />
+                            Trạng thái bàn giao
+                          </span>
+                          <span className="font-semibold text-slate-700">
+                            {booking.checkInTime ? 'Đã nhận xe' : 'Đã giao xe'}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
