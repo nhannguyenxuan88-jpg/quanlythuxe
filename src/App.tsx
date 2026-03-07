@@ -26,8 +26,32 @@ export default function App() {
       if (carsRes.error) throw carsRes.error;
       if (bookingsRes.error) throw bookingsRes.error;
 
-      setCars(carsRes.data.map(mapDbToCar));
-      setBookings(bookingsRes.data.map(mapDbToBooking));
+      const fetchedCars = carsRes.data.map(mapDbToCar);
+      const fetchedBookings = bookingsRes.data.map(mapDbToBooking);
+
+      // Auto-correct car statuses based on active bookings
+      const activeCarIds = new Set(fetchedBookings.filter(b => b.status === 'active').map(b => b.carId));
+      let stateChanged = false;
+
+      const syncedCars = await Promise.all(fetchedCars.map(async (car) => {
+        let expectedStatus = car.status;
+
+        if (activeCarIds.has(car.id)) {
+          expectedStatus = 'rented';
+        } else if (car.status === 'rented') {
+          expectedStatus = 'available'; // Revert back to available if no active booking holds it
+        }
+
+        if (car.status !== expectedStatus) {
+          stateChanged = true;
+          await supabase.from('cars').update({ status: expectedStatus }).eq('id', car.id);
+          return { ...car, status: expectedStatus };
+        }
+        return car;
+      }));
+
+      setCars(syncedCars);
+      setBookings(fetchedBookings);
     } catch (error: any) {
       toast.error('Lỗi khi tải dữ liệu: ' + error.message);
     } finally {
