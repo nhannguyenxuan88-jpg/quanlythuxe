@@ -209,7 +209,7 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
           </table>
 
           {/* Mobile Card View */}
-          <div className="grid grid-cols-1 gap-4 p-4 md:hidden bg-slate-50/50">
+          <div className="grid grid-cols-1 gap-4 p-4 md:hidden bg-slate-50/50 print:hidden">
             {filteredBookings.map((booking) => {
               const car = cars.find(c => c.id === booking.carId);
               const days = Math.max(1, differenceInDays(new Date(booking.endDate), new Date(booking.startDate)));

@@ -159,11 +159,11 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 font-sans overflow-hidden print:h-auto print:overflow-visible print:bg-white">
+    <div className="flex h-screen bg-slate-50 font-sans overflow-hidden print:block print:h-auto print:overflow-visible print:bg-white">
       <Toaster position="top-right" />
       <Sidebar currentView={currentView} onViewChange={setCurrentView} />
       {/* Reduced padding on mobile, added pb-20 to account for bottom nav */}
-      <main className="flex-1 overflow-y-auto p-4 pb-24 md:pb-8 md:p-8 print:p-0 print:overflow-visible relative">
+      <main className="flex-1 overflow-y-auto p-4 pb-24 md:pb-8 md:p-8 print:block print:p-0 print:overflow-visible relative">
         <div className="max-w-7xl mx-auto print:max-w-none">
           {isLoading ? (
             <div className="flex items-center justify-center h-full min-h-[50vh]">
