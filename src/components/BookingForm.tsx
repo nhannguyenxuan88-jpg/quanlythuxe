@@ -614,11 +614,12 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
                   <label className="block text-sm font-medium text-slate-700 mb-1">Giá thuê (VNĐ)</label>
                   <div className="relative">
                     <input
-                      type="number"
-                      value={formData.totalAmount || ''}
+                      type="text"
+                      value={formData.totalAmount ? new Intl.NumberFormat('vi-VN').format(formData.totalAmount) : ''}
                       onChange={e => {
+                        const rawValue = e.target.value.replace(/[^\d]/g, '');
                         setPriceOverride(true);
-                        setFormData({ ...formData, totalAmount: Number(e.target.value) });
+                        setFormData({ ...formData, totalAmount: rawValue ? Number(rawValue) : 0 });
                       }}
                       className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                       placeholder="Nhập giá thuê..."
