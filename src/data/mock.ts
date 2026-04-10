@@ -33,6 +33,7 @@ export interface Booking {
   customerCccdDate?: string; // Ngày cấp CCCD
   customerCccdPlace?: string; // Nơi cấp CCCD
   customerAddress?: string;
+  customerTempAddress?: string; // Địa chỉ tạm trú
   customerLicenseClass?: string;
   customerLicenseNumber?: string;
   customerLicenseExpiry?: string;

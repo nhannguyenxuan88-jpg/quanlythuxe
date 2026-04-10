@@ -320,6 +320,17 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
                   />
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Địa chỉ tạm trú</label>
+                  <input
+                    type="text"
+                    value={formData.customerTempAddress}
+                    onChange={e => setFormData({ ...formData, customerTempAddress: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    placeholder="Địa chỉ tạm trú hiện tại"
+                  />
+                </div>
+
                 {/* --- THÔNG TIN GPLX --- */}
                 <div className="grid grid-cols-3 gap-4">
                   <div>
