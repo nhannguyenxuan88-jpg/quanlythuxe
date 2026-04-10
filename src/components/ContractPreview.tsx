@@ -3,7 +3,8 @@ import { Booking, Car } from '../data/mock';
 import { format } from 'date-fns';
 import SignatureCanvas from 'react-signature-canvas';
 import { Eraser } from 'lucide-react';
-import type { ContractClause } from './Settings';
+import { defaultCoreClauses } from './Settings';
+import type { ContractClause, CoreClauses } from './Settings';
 
 interface ContractPreviewProps {
   booking: Partial<Booking>;
@@ -19,6 +20,8 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
   // Load lessor info from Supabase settings if not injected
   const [localLessorData, setLocalLessorData] = useState<any>(null);
   const [customClauses, setCustomClauses] = useState<ContractClause[]>([]);
+  const [coreClauses, setCoreClauses] = useState<CoreClauses>(defaultCoreClauses);
+  
   useEffect(() => {
     (async () => {
       try {
@@ -30,6 +33,10 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
         // Load custom clauses
         const { data: clausesData } = await supabase.from('settings').select('*').eq('key', 'custom_clauses').single();
         if (clausesData) setCustomClauses(clausesData.value || []);
+        
+        // Load core clauses
+        const { data: coreData } = await supabase.from('settings').select('*').eq('key', 'core_clauses').single();
+        if (coreData) setCoreClauses({ ...defaultCoreClauses, ...coreData.value });
       } catch { }
     })();
   }, [injectedLessorData]);
@@ -174,10 +181,9 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
         </p>
         <div className="pl-4 mt-2">
           <strong>2.2</strong> Phụ phí phát sinh:
-          <p className="pl-4 mt-1"><strong>Phí cầu đường:</strong> Trong thời gian thuê xe, Bên B phải chịu toàn bộ chi phí cầu đường phát sinh cho Bên A.</p>
-          <p className="pl-4 mt-1">Trong trường hợp bên B trả xe trễ quá 6 tiếng thì phải chịu phí 01 ngày thuê.</p>
-          <p className="pl-4 mt-1"><strong>Phí khử mùi:</strong> 200.000 đồng, phát sinh khi xe được hoàn trả bị ám mùi hôi khó chịu (mùi thuốc lá, thực phẩm nặng mùi).</p>
-          <p className="pl-4 mt-1"><strong>Phí sạc pin:</strong> Bên B được miễn phí sạc.</p>
+          {coreClauses.dieu2_2.split('\n').filter(line => line.trim()).map((line, i) => (
+            <p key={i} className="pl-4 mt-1">{line}</p>
+          ))}
         </div>
 
         {/* ĐIỀU 3 */}
@@ -189,44 +195,39 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
           <p className="pl-4 italic text-xs mt-1">(Giá trị Hợp đồng chưa bao gồm các khoản phụ phí phát sinh. Phụ phí được Bên B thanh toán cho Bên A khi kết thúc chuyến đi)</p>
         </div>
         <div className="pl-4 mt-2">
-          <p><strong>3.2. Phương thức thanh toán:</strong> Ngay khi ký hợp đồng, Bên B thanh toán trước cho Bên A 50% giá trị hợp đồng. Bên B thanh toán 50% giá trị hợp đồng còn lại và các khoản phụ phí phát sinh (nếu có) khi Bên B hoàn trả xe cho bên A.</p>
+          {coreClauses.dieu3_2.split('\n').filter(line => line.trim()).map((line, i) => (
+            <p key={i}><strong>{i === 0 ? '3.2. ' : ''}</strong>{line}</p>
+          ))}
         </div>
         <div className="pl-4 mt-2">
-          <p><strong>3.3. Hình thức thanh toán:</strong> Do các bên thỏa thuận.</p>
+          {coreClauses.dieu3_3.split('\n').filter(line => line.trim()).map((line, i) => (
+            <p key={i}><strong>{i === 0 ? '3.3. ' : ''}</strong>{line}</p>
+          ))}
         </div>
 
         {/* ĐIỀU 4 */}
         <div className="font-bold mt-6 uppercase">ĐIỀU 4: THẾ CHẤP TÀI SẢN</div>
         <p>Khi Bên B thuê xe của Bên A phải thực hiện việc thế chấp tài sản cho Bên A, cụ thể như sau:</p>
-        <div className="pl-4 mt-2">
-          <p>+ Trường hợp Bên B có địa chỉ thường trú tại Vũng Tàu, Bên B thực hiện việc thế chấp xe máy của mình (kèm theo cà vẹt) hoặc 10.000.000 đồng cho Bên A. Khi Bên B hoàn trả lại tài sản thuê cho Bên A, Bên A sẽ hoàn trả lại tài sản thế chấp cho Bên B.</p>
-        </div>
-        <div className="pl-4 mt-2">
-          <p>+ Trường hợp Bên B không có địa chỉ thường trú tại Vũng Tàu, khi thuê xe Bên B thực hiện thế chấp xe máy của mình (kèm theo cà vẹt) và 5.000.000 đồng hoặc 15.000.000 đồng cho Bên A. Khi Bên B hoàn trả lại tài sản thuê cho Bên A, Bên A sẽ hoàn trả lại tài sản thế chấp cho Bên B nhưng sẽ giữ lại số tiền 5.000.000 đồng. Trong thời hạn 5 ngày, Bên A sẽ hoàn trả cho Bên B số tiền giữ lại nếu tài sản thuê không phát sinh phạt nguội trong thời gian Bên B thuê.</p>
-        </div>
+        {coreClauses.dieu4.split('\n').filter(line => line.trim()).map((line, i) => (
+          <div key={i} className="pl-4 mt-2"><p>{line}</p></div>
+        ))}
 
         {/* ĐIỀU 5 */}
         <div className="font-bold mt-6 uppercase">ĐIỀU 5: QUYỀN VÀ NGHĨA VỤ CỦA BÊN A</div>
         <div className="mt-2">
           <p className="font-bold">5.1. Quyền của Bên A</p>
           <div className="pl-4">
-            <p>- Nhận đủ tiền thuê và tài sản thế chấp theo như thỏa thuận.</p>
-            <p>- Khi hết hạn Hợp đồng có quyền nhận lại tài sản thuê như tình trạng thỏa thuận ban đầu, trừ hao mòn tự nhiên.</p>
-            <p>- Trường hợp xe có phát sinh sự cố trong chuyến đi dẫn đến phải đưa xe đi kiểm tra, sửa chữa, Bên A có quyền yêu cầu Bên B cùng tham gia vào quá trình bao gồm nhưng không giới hạn: liên hệ bảo hiểm, cùng đi giám định và sửa chữa,… Trường hợp các Bên có thỏa thuận khác, phải ghi nhận thông tin ở Biên bản bàn giao xe.</p>
-            <p>- Có quyền đơn phương chấm dứt Hợp đồng và yêu cầu bồi thường thiệt hại nếu Bên B có các hành vi sử dụng tài sản thuê không đúng mục đích như đã thỏa thuận, làm hư hỏng, mất mát tài sản thuê, giao xe cho người khác sử dụng mà không có sự đồng ý của Bên A.</p>
-            <p>- Báo cho Cơ quan Công an khi Bên A không liên lạc được với Bên B hoặc Bên B tắt/tháo thiết bị định vị trên xe hoặc quá thời gian thuê xe tại Hợp đồng này mà Bên B không hoàn trả xe cho Bên A.</p>
-            <p>- Yêu cầu Bên B thực hiện nộp phạt vi phạm hành chính trong thời gian Bên B thuê xe (phạt nguội). Trường hợp Bên B không thể đi nộp phạt thì phải cung cấp giấy phép lái xe của Bên B và thanh toán trước chi phí phạt theo lỗi vi phạm, chi phí đi lại (nếu có) cho Bên A để Bên A hỗ trợ thực hiện.</p>
-            <p>- Đối với trường hợp các Bên có thỏa thuận về việc đặt cọc tài sản, Bên A có quyền giữ tài sản đặt cọc của Bên B từ lúc nhận xe đến khi Bên B hoàn tất việc trả xe và các khoản chi phí phát sinh (nếu có).</p>
+            {coreClauses.dieu5_1.split('\n').filter(line => line.trim()).map((line, i) => (
+              <p key={i}>{line}</p>
+            ))}
           </div>
         </div>
         <div className="mt-2">
           <p className="font-bold">5.2. Nghĩa vụ của Bên A</p>
           <div className="pl-4">
-            <p>- Chịu trách nhiệm pháp lý về nguồn gốc và quyền sở hữu của xe.</p>
-            <p>- Hoàn trả tài sản thế chấp cho Bên B theo thỏa thuận tại Điều 4 khi Bên B hoàn trả tài sản thuê.</p>
-            <p>- Giao toàn bộ giấy tờ liên quan đến xe trong tình trạng xe an toàn, vệ sinh sạch sẽ nhằm đảm bảo chất lượng dịch vụ khi Bên B sử dụng. Các giấy tờ xe liên quan bao gồm: giấy đăng ký xe ô tô, giấy kiểm định xe ô tô (bản photo), giấy bảo hiểm xe ô tô bắt buộc (bản chính).</p>
-            <p>- Giao xe tại địa điểm bàn giao xe và đúng thời gian theo Hợp đồng này, trước khi giao xe cho Bên B, phải kiểm tra, đối chiếu thông tin khách thuê, sao chụp lại các giấy tờ nhân thân cần thiết để phục vụ nhu cầu liên hệ sau này.</p>
-            <p>- Hỗ trợ Bên B khi xe gặp sự cố, hư hỏng cần sửa chữa trong thời gian thuê xe.</p>
+            {coreClauses.dieu5_2.split('\n').filter(line => line.trim()).map((line, i) => (
+              <p key={i}>{line}</p>
+            ))}
           </div>
         </div>
 
@@ -235,39 +236,35 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
         <div className="mt-2">
           <p className="font-bold">6.1. Quyền của Bên B</p>
           <div className="pl-4">
-            <p>- Nhận đúng xe và các giấy tờ liên quan đến xe theo Hợp đồng này.</p>
-            <p>- Trường hợp cấp thiết cần phải sửa chữa xe, Bên B có quyền được thực hiện việc sửa chữa nhưng phải thông báo trước cho Bên A về tình trạng xe đang gặp phải và những vấn đề cần khắc phục trước khi tiến hành sửa chữa.</p>
-            <p>- Yêu cầu Bên A sửa chữa nếu xe có hư hỏng do lỗi của Bên A hoặc do hao mòn tự nhiên của xe; và bồi thường thiệt hại nếu Bên A chậm giao hoặc giao xe không đúng như thỏa thuận.</p>
-            <p>- Yêu cầu Bên A cung cấp hóa đơn, giấy tờ thể hiện chi phí sửa chữa trong trường hợp Bên A thay mặt Bên B làm việc với nhà bảo hiểm, gara để sửa chữa xe hư hỏng do lỗi của Bên B.</p>
-            <p>- Đơn phương chấm dứt Hợp đồng và yêu cầu bồi thường thiệt hại nếu Bên A thực hiện các hành vi sau:</p>
-            <div className="pl-4">
-              <p>+ Bên A giao xe không đúng thời hạn như thỏa thuận, trừ trường hợp bất khả kháng (Trường hợp bất khả kháng được hiểu là một Bên cố gắng thực hiện bằng mọi biện pháp để thực hiện nghĩa vụ của mình nhưng không thể thực hiện được vì trở ngại khách quan: mưa bão, dịch bệnh…). Bên nào viện dẫn trường hợp bất khả kháng thì Bên đó có nghĩa vụ chứng minh. Trường hợp giao xe chậm gây thiệt hại cho Bên B thì phải bồi thường.</p>
-              <p>+ Xe có khuyết tật dẫn đến Bên B không đạt được mục đích thuê mà Bên B không biết.</p>
-              <p>+ Xe có tranh chấp về quyền sở hữu giữa Bên A với Bên thứ ba mà Bên B không biết dẫn đến Bên B không xác lập được mục đích sử dụng xe trong quá trình thuê như đã thỏa thuận.</p>
-            </div>
+            {coreClauses.dieu6_1.split('\n').filter(line => line.trim()).map((line, i) => (
+              <p key={i}>{line}</p>
+            ))}
           </div>
         </div>
         <div className="mt-2">
           <p className="font-bold">6.2. Nghĩa vụ của Bên B</p>
           <div className="pl-4">
-            <p>- Cung cấp và tự chịu trách nhiệm về các thông tin nhân thân cần thiết theo nội dung ở phần đầu Hợp đồng và Giấy phép lái xe của mình.</p>
-            <p>- Kiểm tra kỹ xe trước khi nhận và trước khi hoàn trả xe. Quay chụp tình trạng xe để làm căn cứ đồng thời ký xác nhận tình trạng xe khi nhận và khi hoàn trả.</p>
-            <p>- Thanh toán cho Bên A tiền thuê xe theo thỏa thuận và toàn bộ phụ phí phát sinh trong chuyến đi ngay tại thời điểm hoàn trả xe. Bàn giao tài sản thế chấp ngay khi ký hợp đồng cho Bên A.</p>
-            <p>- Kiểm tra kỹ và tự chịu trách nhiệm đối với tư trang, tài sản cá nhân của mình trước khi trả xe, đảm bảo không để quên, thất lạc đồ trên xe.</p>
-            <p>- Tuân thủ quy định trả xe như đã được ký kết trong Hợp đồng. Nếu trả xe không đúng thời hạn, Bên B sẽ phải trả thêm tiền phụ trội, và số tiền trả thêm sẽ được tính theo giờ/ngày như quy định tại Điều 2 Hợp đồng này.</p>
-            <p>- Bên B chịu trách nhiệm đền bù mọi thất thoát về phụ tùng, phụ kiện của xe: đền bù 100% theo giá phụ tùng chính hãng nếu tráo đổi linh kiện, phụ tùng; chịu 100% chi phí sửa chữa xe nếu có xảy ra hỏng hóc được xác định do lỗi của Bên B, địa điểm sửa chữa theo sự chỉ định của Bên A hoặc 2 Bên tự thỏa thuận. Các ngày xe nghỉ không chạy được do lỗi của Bên B thì Bên B phải trả tiền hoàn toàn trong các ngày đó, giá được tính bằng giá thuê trong Hợp đồng (hoặc các bên có thỏa thuận khác).</p>
-            <p>- Nghiêm túc chấp hành đúng luật lệ giao thông đường bộ. Tự chịu trách nhiệm dân sự, hình sự, hành chính trong suốt thời gian thuê xe. Có nghĩa vụ thực hiện nộp phạt vi phạm hành chính trong lĩnh vực giao thông đường bộ căn cứ vào thời gian thuê xe của Hợp đồng này và thông báo phạt vi phạm từ cơ quan nhà nước có thẩm quyền.</p>
-            <p>- Tuyệt đối không cho người khác thuê lại và không sử dụng xe cho các hành vi trái pháp luật: cầm cố, đua xe, chở hàng lậu, hàng cấm, … Không giao tay lái cho người không đủ năng lực hành vi, không có GPLX từ B1 trở lên. Trường hợp Bên A có căn cứ thấy rằng Bên B có dấu hiệu vi phạm thì Bên A có quyền đơn phương chấm dứt Hợp đồng, đồng thời sẽ thông báo với Cơ quan Công an và thực hiện biện pháp thu hồi xe. Bên B phải hoàn toàn chịu trách nhiệm hình sự trước pháp luật và chịu các phí tổn phát sinh khác.</p>
+            {coreClauses.dieu6_2.split('\n').filter(line => line.trim()).map((line, i) => (
+              <p key={i}>{line}</p>
+            ))}
           </div>
         </div>
 
         {/* ĐIỀU 7 */}
         <div className="font-bold mt-6 uppercase">ĐIỀU 7: ĐIỀU KHOẢN CHUNG</div>
         <div className="pl-4 mt-2">
-          <p><strong>7.1</strong> Hợp đồng này, Biên bản bàn giao và các phụ lục bổ sung Hợp đồng (nếu có) là bộ phận không tách rời của Hợp đồng, các Bên phải có nghĩa vụ thực hiện, cam kết thi hành đúng các điều khoản của Hợp đồng, không Bên nào tự ý đơn phương sửa đổi, đình chỉ hoặc hủy bỏ Hợp đồng. Mọi sự vi phạm phải được xử lý theo pháp luật.</p>
-          <p className="mt-2"><strong>7.2</strong> Trong quá trình thực hiện Hợp đồng, nếu có vấn đề phát sinh các Bên sẽ cùng bàn bạc giải quyết trên tinh thần hợp tác và tôn trọng lợi ích của cả hai Bên và được thể hiện bằng văn bản. Nếu không giải quyết được thì đưa ra Tòa án nhân dân có thẩm quyền để giải quyết. Bên thua kiện sẽ chịu toàn bộ chi phí.</p>
-          <p className="mt-2"><strong>7.3</strong> Hợp đồng này tự động chấm dứt khi Bên B hoàn trả xe cho Bên A và hai Bên hoàn tất mọi nghĩa vụ phát sinh từ Hợp đồng này.</p>
-          <p className="mt-2"><strong>7.4</strong> Hợp đồng có hiệu lực kể từ thời điểm ký kết và được lập thành 02 (hai) bản, mỗi Bên giữ 01 (một) bản.</p>
+          {coreClauses.dieu7.split('\n').filter(line => line.trim()).map((line, i) => {
+            const hasPrefix = /^\d+\.\d+/.test(line);
+            return (
+              <p key={i} className={i > 0 ? 'mt-2' : ''}>
+                {hasPrefix ? (
+                  <><strong>{line.split(' ')[0]}</strong> {line.substring(line.indexOf(' ') + 1)}</>
+                ) : (
+                  line
+                )}
+              </p>
+            );
+          })}
         </div>
 
         {/* ĐIỀU KHOẢN BỔ SUNG (từ Settings) */}
