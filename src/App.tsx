@@ -130,11 +130,14 @@ export default function App() {
       const { data, error } = await supabase.from('bookings').insert([dbBooking]).select().single();
       if (error) throw error;
 
-      // Sync car status if booking is active
+      // Sync car status if booking is active and car is available
       if (booking.status === 'active') {
-        const { error: carError } = await supabase.from('cars').update({ status: 'rented' }).eq('id', booking.carId);
-        if (!carError) {
-          setCars(cars.map(c => c.id === booking.carId ? { ...c, status: 'rented' } : c));
+        const currentCar = cars.find(c => c.id === booking.carId);
+        if (currentCar && currentCar.status === 'available') {
+          const { error: carError } = await supabase.from('cars').update({ status: 'rented' }).eq('id', booking.carId);
+          if (!carError) {
+            setCars(cars.map(c => c.id === booking.carId ? { ...c, status: 'rented' } : c));
+          }
         }
       }
 

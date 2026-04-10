@@ -62,6 +62,7 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
 
   const [idFiles, setIdFiles] = useState<{ front?: File; back?: File; licenseFront?: File; licenseBack?: File }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [priceOverride, setPriceOverride] = useState(!!initialData?.totalAmount);
   const contractRef = useRef<HTMLDivElement>(null);
 
   const selectedCar = cars.find(c => c.id === formData.carId);
@@ -80,13 +81,13 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
   }, []);
 
   useEffect(() => {
-    if (formData.startDate && formData.endDate && selectedCar) {
+    if (!priceOverride && formData.startDate && formData.endDate && selectedCar) {
       const start = new Date(formData.startDate);
       const end = new Date(formData.endDate);
       const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
       setFormData(prev => ({ ...prev, totalAmount: days * selectedCar.pricePerDay }));
     }
-  }, [formData.startDate, formData.endDate, formData.carId, selectedCar]);
+  }, [formData.startDate, formData.endDate, formData.carId, selectedCar, priceOverride]);
 
   const handlePrint = () => {
     window.print();
@@ -571,15 +572,21 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
                     className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-white transition-all"
                   >
                     <option value="">-- Chọn xe --</option>
-                    {cars.filter(c => c.status === 'available' || c.id === formData.carId).map(car => (
-                      <option key={car.id} value={car.id}>
-                        {car.plate} - {car.brand} {car.model} ({new Intl.NumberFormat('vi-VN').format(car.pricePerDay)}đ/ngày)
-                      </option>
-                    ))}
+                    {cars.filter(c => c.status !== 'maintenance' || c.id === formData.carId).map(car => {
+                      const statusLabel = car.status === 'rented' ? ' 🔴 Đang thuê' : car.status === 'maintenance' ? ' 🟡 Bảo trì' : '';
+                      return (
+                        <option key={car.id} value={car.id}>
+                          {car.plate} - {car.brand} {car.model} ({new Intl.NumberFormat('vi-VN').format(car.pricePerDay)}đ/ngày){statusLabel}
+                        </option>
+                      );
+                    })}
                   </select>
+                  {selectedCar && selectedCar.status === 'rented' && formData.carId !== initialData?.carId && (
+                    <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">⚠️ Xe này đang cho thuê. HĐ sẽ được tạo trước, xe sẽ chuyển trạng thái khi bàn giao.</p>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 pb-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Từ ngày *</label>
                     <input
@@ -600,6 +607,49 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
                       className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm"
                     />
                   </div>
+                </div>
+
+                {/* Giá thuê linh hoạt */}
+                <div className="pb-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Giá thuê (VNĐ)</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={formData.totalAmount || ''}
+                      onChange={e => {
+                        setPriceOverride(true);
+                        setFormData({ ...formData, totalAmount: Number(e.target.value) });
+                      }}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                      placeholder="Nhập giá thuê..."
+                    />
+                    {priceOverride && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPriceOverride(false);
+                          // Recalculate
+                          if (formData.startDate && formData.endDate && selectedCar) {
+                            const start = new Date(formData.startDate);
+                            const end = new Date(formData.endDate);
+                            const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+                            setFormData(prev => ({ ...prev, totalAmount: days * selectedCar.pricePerDay }));
+                          }
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-indigo-600 hover:text-indigo-800 font-medium bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-md transition-colors"
+                      >
+                        Tính tự động
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {priceOverride
+                      ? '💰 Giá đã nhập thủ công. Bấm "Tính tự động" để tính lại theo đơn giá/ngày.'
+                      : selectedCar
+                        ? `📐 Tự động: ${new Intl.NumberFormat('vi-VN').format(selectedCar.pricePerDay)}đ/ngày × ${(() => { const s = new Date(formData.startDate || ''); const e = new Date(formData.endDate || ''); return Math.max(1, Math.ceil((e.getTime() - s.getTime()) / 86400000)); })()} ngày`
+                        : 'Chọn xe và ngày thuê để tự động tính giá'
+                    }
+                  </p>
                 </div>
               </form>
             </div>
