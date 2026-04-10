@@ -3,6 +3,7 @@ import { Booking, Car } from '../data/mock';
 import { format } from 'date-fns';
 import SignatureCanvas from 'react-signature-canvas';
 import { Eraser } from 'lucide-react';
+import type { ContractClause } from './Settings';
 
 interface ContractPreviewProps {
   booking: Partial<Booking>;
@@ -17,13 +18,18 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
 
   // Load lessor info from Supabase settings if not injected
   const [localLessorData, setLocalLessorData] = useState<any>(null);
+  const [customClauses, setCustomClauses] = useState<ContractClause[]>([]);
   useEffect(() => {
-    if (injectedLessorData) return;
     (async () => {
       try {
         const { supabase } = await import('../lib/supabase');
-        const { data } = await supabase.from('settings').select('*').eq('key', 'lessor_info').single();
-        if (data) setLocalLessorData(data.value);
+        if (!injectedLessorData) {
+          const { data } = await supabase.from('settings').select('*').eq('key', 'lessor_info').single();
+          if (data) setLocalLessorData(data.value);
+        }
+        // Load custom clauses
+        const { data: clausesData } = await supabase.from('settings').select('*').eq('key', 'custom_clauses').single();
+        if (clausesData) setCustomClauses(clausesData.value || []);
       } catch { }
     })();
   }, [injectedLessorData]);
@@ -263,6 +269,18 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
           <p className="mt-2"><strong>7.3</strong> Hợp đồng này tự động chấm dứt khi Bên B hoàn trả xe cho Bên A và hai Bên hoàn tất mọi nghĩa vụ phát sinh từ Hợp đồng này.</p>
           <p className="mt-2"><strong>7.4</strong> Hợp đồng có hiệu lực kể từ thời điểm ký kết và được lập thành 02 (hai) bản, mỗi Bên giữ 01 (một) bản.</p>
         </div>
+
+        {/* ĐIỀU KHOẢN BỔ SUNG (từ Settings) */}
+        {customClauses.filter(c => c.enabled).map((clause) => (
+          <div key={clause.id} className="mt-6">
+            <div className="font-bold uppercase">{clause.title}</div>
+            <div className="pl-4 mt-2">
+              {clause.content.split('\n').filter(line => line.trim()).map((line, i) => (
+                <p key={i} className={i > 0 ? 'mt-1' : ''}>{line}</p>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Chữ ký */}
