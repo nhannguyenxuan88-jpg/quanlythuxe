@@ -76,7 +76,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
     return {
-      time: `${hours}h giờ ${minutes} phút`,
+      time: `${hours} giờ ${minutes} phút`,
       date: `ngày ${day}/${month}/${year}`
     };
   };
@@ -147,7 +147,10 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
 
         {/* BÊN B */}
         <div className="font-bold uppercase mt-4">BÊN THUÊ XE (BÊN B)</div>
-        <div className="pl-4">Ông/Bà: <strong>{booking.customerName || '........................................'}</strong></div>
+        <div className="grid grid-cols-2 gap-1 pl-4">
+          <div>Ông/Bà: <strong>{booking.customerName || '........................................'}</strong></div>
+          <div>Ngày sinh: <strong>{booking.customerYearOfBirth || '..................'}</strong></div>
+        </div>
         <div className="pl-4">CCCD số: <strong>{booking.customerCCCD || '......................................'}</strong></div>
         <div className="pl-4">GPLX số: <strong>{booking.customerLicenseNumber || '......................................'}</strong></div>
         <div className="pl-4">Địa chỉ thường trú: {booking.customerAddress || '...................................................................................'}</div>

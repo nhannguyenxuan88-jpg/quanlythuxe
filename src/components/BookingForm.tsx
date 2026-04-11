@@ -586,26 +586,97 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
+                  {/* Từ Ngày - Custom Picker 24h */}
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Từ ngày *</label>
-                    <input
-                      type="datetime-local"
-                      required
-                      value={formData.startDate}
-                      onChange={e => setFormData({ ...formData, startDate: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm"
-                    />
+                    <div className="flex rounded-lg shadow-sm">
+                      <input 
+                        type="date"
+                        required
+                        value={(formData.startDate || '').split('T')[0] || ''}
+                        onChange={e => {
+                          const timePart = (formData.startDate || '').split('T')[1] || '00:00';
+                          setFormData({ ...formData, startDate: `${e.target.value}T${timePart}` });
+                        }}
+                        className="w-full px-2 py-2 border border-slate-200 border-r-0 rounded-l-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm bg-white"
+                      />
+                      <select 
+                        value={((formData.startDate || '').split('T')[1] || '00:00').split(':')[0] || '00'} 
+                        onChange={e => {
+                          const datePart = (formData.startDate || '').split('T')[0] || '';
+                          const minutes = ((formData.startDate || '').split('T')[1] || '00:00').split(':')[1] || '00';
+                          setFormData({ ...formData, startDate: `${datePart}T${e.target.value}:${minutes}` });
+                        }}
+                        className="px-1 py-2 border-y border-l border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-slate-100 cursor-pointer text-center"
+                      >
+                        {Array.from({length: 24}).map((_, i) => {
+                          const h = String(i).padStart(2, '0');
+                          return <option key={h} value={h}>{h}</option>;
+                        })}
+                      </select>
+                      <div className="flex items-center justify-center bg-slate-50 border-y border-slate-200 px-1 text-slate-400 font-bold">:</div>
+                      <select 
+                        value={((formData.startDate || '').split('T')[1] || '00:00').split(':')[1] || '00'} 
+                        onChange={e => {
+                          const datePart = (formData.startDate || '').split('T')[0] || '';
+                          const hours = ((formData.startDate || '').split('T')[1] || '00:00').split(':')[0] || '00';
+                          setFormData({ ...formData, startDate: `${datePart}T${hours}:${e.target.value}` });
+                        }}
+                        className="px-1 py-2 border border-slate-200 border-l-0 rounded-r-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-slate-100 cursor-pointer text-center"
+                      >
+                        {Array.from({length: 60}).map((_, i) => {
+                          const m = String(i).padStart(2, '0');
+                          return <option key={m} value={m}>{m}</option>;
+                        })}
+                      </select>
+                    </div>
                   </div>
+
+                  {/* Đến Ngày - Custom Picker 24h */}
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Đến ngày *</label>
-                    <input
-                      type="datetime-local"
-                      required
-                      value={formData.endDate}
-                      onChange={e => setFormData({ ...formData, endDate: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm"
-                    />
+                    <div className="flex rounded-lg shadow-sm">
+                      <input 
+                        type="date"
+                        required
+                        value={(formData.endDate || '').split('T')[0] || ''}
+                        onChange={e => {
+                          const timePart = (formData.endDate || '').split('T')[1] || '00:00';
+                          setFormData({ ...formData, endDate: `${e.target.value}T${timePart}` });
+                        }}
+                        className="w-full px-2 py-2 border border-slate-200 border-r-0 rounded-l-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm bg-white"
+                      />
+                      <select 
+                        value={((formData.endDate || '').split('T')[1] || '00:00').split(':')[0] || '00'} 
+                        onChange={e => {
+                          const datePart = (formData.endDate || '').split('T')[0] || '';
+                          const minutes = ((formData.endDate || '').split('T')[1] || '00:00').split(':')[1] || '00';
+                          setFormData({ ...formData, endDate: `${datePart}T${e.target.value}:${minutes}` });
+                        }}
+                        className="px-1 py-2 border-y border-l border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-slate-100 cursor-pointer text-center"
+                      >
+                        {Array.from({length: 24}).map((_, i) => {
+                          const h = String(i).padStart(2, '0');
+                          return <option key={h} value={h}>{h}</option>;
+                        })}
+                      </select>
+                      <div className="flex items-center justify-center bg-slate-50 border-y border-slate-200 px-1 text-slate-400 font-bold">:</div>
+                      <select 
+                        value={((formData.endDate || '').split('T')[1] || '00:00').split(':')[1] || '00'} 
+                        onChange={e => {
+                          const datePart = (formData.endDate || '').split('T')[0] || '';
+                          const hours = ((formData.endDate || '').split('T')[1] || '00:00').split(':')[0] || '00';
+                          setFormData({ ...formData, endDate: `${datePart}T${hours}:${e.target.value}` });
+                        }}
+                        className="px-1 py-2 border border-slate-200 border-l-0 rounded-r-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm bg-slate-50 hover:bg-slate-100 cursor-pointer text-center"
+                      >
+                        {Array.from({length: 60}).map((_, i) => {
+                          const m = String(i).padStart(2, '0');
+                          return <option key={m} value={m}>{m}</option>;
+                        })}
+                      </select>
+                    </div>
                   </div>
                 </div>
 
