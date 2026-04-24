@@ -559,6 +559,7 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
       {isAdding && (
         <BookingForm
           cars={cars}
+          bookings={bookings}
           onSave={(booking) => {
             onAddBooking(booking);
             setIsAdding(false);
@@ -570,6 +571,7 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
       {editingBooking && (
         <BookingForm
           cars={cars}
+          bookings={bookings}
           initialData={editingBooking}
           onSave={(booking) => {
             onUpdateBooking(editingBooking.id, booking);

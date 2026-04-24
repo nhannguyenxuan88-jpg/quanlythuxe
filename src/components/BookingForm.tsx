@@ -1,18 +1,19 @@
-import { useState, useEffect, FormEvent, useRef } from 'react';
+import { useState, useEffect, FormEvent, useRef, useMemo } from 'react';
 import { Booking, Car } from '../data/mock';
-import { X, Printer, Save, Upload, Loader2 } from 'lucide-react';
+import { X, Printer, Save, Upload, Loader2, Users, Search, ChevronDown } from 'lucide-react';
 import { ContractPreview } from './ContractPreview';
 import { supabase } from '../lib/supabase';
 import html2canvas from 'html2canvas';
 
 interface BookingFormProps {
   cars: Car[];
+  bookings?: Booking[];
   onSave: (booking: Omit<Booking, 'id'>) => void;
   onCancel: () => void;
   initialData?: Partial<Booking>;
 }
 
-export function BookingForm({ cars, onSave, onCancel, initialData }: BookingFormProps) {
+export function BookingForm({ cars, bookings = [], onSave, onCancel, initialData }: BookingFormProps) {
   // Normalize date string to datetime-local format (yyyy-MM-ddTHH:mm) in LOCAL timezone
   const toDatetimeLocal = (dateStr?: string) => {
     if (!dateStr) return '';
@@ -64,8 +65,65 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [priceOverride, setPriceOverride] = useState(!!initialData?.totalAmount);
   const contractRef = useRef<HTMLDivElement>(null);
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [showCustomerPicker, setShowCustomerPicker] = useState(false);
+  const customerPickerRef = useRef<HTMLDivElement>(null);
 
   const selectedCar = cars.find(c => c.id === formData.carId);
+
+  // Extract unique past customers from bookings (keyed by CCCD or phone)
+  const pastCustomers = useMemo(() => {
+    const map = new Map<string, Partial<Booking>>();
+    bookings.forEach(b => {
+      const key = b.customerCCCD || b.customerPhone || '';
+      if (!key) return;
+      // Keep the most recent entry for each customer
+      if (!map.has(key)) {
+        map.set(key, b);
+      }
+    });
+    return Array.from(map.values());
+  }, [bookings]);
+
+  const filteredCustomers = useMemo(() => {
+    if (!customerSearch.trim()) return pastCustomers;
+    const q = customerSearch.toLowerCase();
+    return pastCustomers.filter(c =>
+      (c.customerName || '').toLowerCase().includes(q) ||
+      (c.customerPhone || '').includes(q) ||
+      (c.customerCCCD || '').includes(q)
+    );
+  }, [customerSearch, pastCustomers]);
+
+  const handleSelectCustomer = (customer: Partial<Booking>) => {
+    setFormData(prev => ({
+      ...prev,
+      customerName: customer.customerName || prev.customerName,
+      customerPhone: customer.customerPhone || prev.customerPhone,
+      customerYearOfBirth: customer.customerYearOfBirth || prev.customerYearOfBirth,
+      customerCCCD: customer.customerCCCD || prev.customerCCCD,
+      customerCccdDate: customer.customerCccdDate || prev.customerCccdDate,
+      customerCccdPlace: customer.customerCccdPlace || prev.customerCccdPlace,
+      customerAddress: customer.customerAddress || prev.customerAddress,
+      customerTempAddress: customer.customerTempAddress || prev.customerTempAddress,
+      customerLicenseClass: customer.customerLicenseClass || prev.customerLicenseClass,
+      customerLicenseNumber: customer.customerLicenseNumber || prev.customerLicenseNumber,
+      customerLicenseExpiry: customer.customerLicenseExpiry || prev.customerLicenseExpiry,
+    }));
+    setShowCustomerPicker(false);
+    setCustomerSearch('');
+  };
+
+  // Close picker when clicking outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (customerPickerRef.current && !customerPickerRef.current.contains(e.target as Node)) {
+        setShowCustomerPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const [lessorData, setLessorData] = useState<any>(null);
 
@@ -238,6 +296,87 @@ export function BookingForm({ cars, onSave, onCancel, initialData }: BookingForm
           <div className={`w-full md:w-1/3 md:border-r border-slate-100 flex-col overflow-y-auto print:hidden ${activeTab === 'form' ? 'flex' : 'hidden md:flex'}`}>
             <div className="p-4">
               <form id="booking-form" onSubmit={handleSubmit} className="space-y-4">
+                {/* Customer Picker from past bookings */}
+                {!initialData && pastCustomers.length > 0 && (
+                  <div ref={customerPickerRef} className="relative">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      <span className="flex items-center gap-1.5"><Users size={14} className="text-indigo-500" /> Chọn khách hàng cũ</span>
+                    </label>
+                    <div
+                      className={`flex items-center gap-2 w-full px-3 py-2.5 rounded-xl border-2 cursor-pointer transition-all ${
+                        showCustomerPicker
+                          ? 'border-indigo-400 bg-white ring-2 ring-indigo-100 shadow-md'
+                          : 'border-dashed border-indigo-200 bg-indigo-50/50 hover:bg-indigo-50 hover:border-indigo-300'
+                      }`}
+                      onClick={() => setShowCustomerPicker(!showCustomerPicker)}
+                    >
+                      <Search size={16} className="text-indigo-400 shrink-0" />
+                      <span className="text-sm text-indigo-600 font-medium flex-1">
+                        Tìm & chọn khách hàng đã thuê trước đó ({pastCustomers.length})
+                      </span>
+                      <ChevronDown size={16} className={`text-indigo-400 transition-transform ${showCustomerPicker ? 'rotate-180' : ''}`} />
+                    </div>
+
+                    {showCustomerPicker && (
+                      <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden" style={{ maxHeight: '320px' }}>
+                        {/* Search input */}
+                        <div className="p-2 border-b border-slate-100 sticky top-0 bg-white z-10">
+                          <div className="relative">
+                            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                              type="text"
+                              autoFocus
+                              value={customerSearch}
+                              onChange={e => setCustomerSearch(e.target.value)}
+                              className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                              placeholder="Tìm theo tên, SĐT, CCCD..."
+                              onClick={e => e.stopPropagation()}
+                            />
+                          </div>
+                        </div>
+                        {/* Customer list */}
+                        <div className="overflow-y-auto" style={{ maxHeight: '260px' }}>
+                          {filteredCustomers.length === 0 ? (
+                            <div className="p-4 text-center text-sm text-slate-500">
+                              Không tìm thấy khách hàng phù hợp
+                            </div>
+                          ) : (
+                            filteredCustomers.map((customer, idx) => (
+                              <button
+                                key={customer.customerCCCD || customer.customerPhone || idx}
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSelectCustomer(customer);
+                                }}
+                                className="w-full text-left px-3 py-2.5 hover:bg-indigo-50 transition-colors border-b border-slate-50 last:border-b-0 group"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center shrink-0 shadow-sm">
+                                    <span className="text-white text-xs font-bold">
+                                      {(customer.customerName || '?').charAt(0).toUpperCase()}
+                                    </span>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-sm text-slate-800 truncate group-hover:text-indigo-700 transition-colors">
+                                      {customer.customerName}
+                                    </p>
+                                    <p className="text-xs text-slate-500 truncate">
+                                      {customer.customerPhone}
+                                      {customer.customerCCCD && <span className="ml-2 text-slate-400">• CCCD: {customer.customerCCCD}</span>}
+                                    </p>
+                                  </div>
+                                  <span className="text-xs text-indigo-500 font-medium opacity-0 group-hover:opacity-100 transition-opacity shrink-0">Chọn</span>
+                                </div>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Khách hàng *</label>
                   <input
