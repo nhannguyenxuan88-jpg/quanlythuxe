@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Booking, Car as CarType, BookingStatus } from '../data/mock';
 import { Plus, Search, Filter, Calendar as CalendarIcon, MoreVertical, Edit, Trash2, Printer, X, Image as ImageIcon, Download, ClipboardCheck, FileText, MessageSquare, Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
@@ -26,12 +26,12 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
   const [isAdding, setIsAdding] = useState(false);
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [printingBooking, setPrintingBooking] = useState<Booking | null>(null);
+  const [pdfBooking, setPdfBooking] = useState<Booking | null>(null);
   const [viewingDocuments, setViewingDocuments] = useState<Booking | null>(null);
   const [handoverBooking, setHandoverBooking] = useState<{ booking: Booking, type: 'checkout' | 'checkin' } | null>(null);
   const [lessorData, setLessorData] = useState<any>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const hiddenContractRef = import('react').then(module => module.useRef<HTMLDivElement>(null)); // Just use a standard useRef
-  const contractRef = import('react').then(module => module.useRef<HTMLDivElement>(null));
+  const pdfContractRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -128,82 +128,84 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
 
   const handleShareZaloPDF = async (bookingToShare: Booking) => {
     setIsGeneratingPDF(true);
-    setPrintingBooking(bookingToShare); // Temporarily open print view so we can capture it
+    setPdfBooking(bookingToShare);
 
-    // Give it a slightly longer delay to ensure React finishes rendering the DOM
-    setTimeout(async () => {
-      try {
-        const contractEl = document.getElementById('print-contract-preview-content');
-        if (!contractEl) throw new Error('Không tìm thấy giao diện hợp đồng');
+    try {
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      });
 
-        // Capture with better quality settings and full height
-        const canvas = await html2canvas(contractEl, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          windowWidth: 800, // Force standard width for PDF
-          windowHeight: contractEl.scrollHeight, // Force capture of full vertical height
-          height: contractEl.scrollHeight // Ensure canvas takes the full height of the content
-        });
+      const contractEl = pdfContractRef.current;
+      if (!contractEl) throw new Error('Không tìm thấy giao diện hợp đồng');
 
-        const imgData = canvas.toDataURL('image/jpeg', 1.0);
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4'
-        });
+      // Capture with stable width and full height
+      const canvas = await html2canvas(contractEl, {
+        scale: 1.5,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        windowWidth: contractEl.scrollWidth,
+        windowHeight: contractEl.scrollHeight,
+        height: contractEl.scrollHeight
+      });
 
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        const canvasImgWidth = canvas.width;
-        const canvasImgHeight = canvas.height;
-        const ratio = pdfWidth / canvasImgWidth;
-        const imgHeightPx = canvasImgHeight * ratio;
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
 
-        let heightLeft = imgHeightPx;
-        let position = 0;
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const canvasImgWidth = canvas.width;
+      const canvasImgHeight = canvas.height;
+      const ratio = pdfWidth / canvasImgWidth;
+      const imgHeightPx = canvasImgHeight * ratio;
 
-        // Add first page
+      let heightLeft = imgHeightPx;
+      let position = 0;
+
+      // Add first page
+      pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeightPx);
+      heightLeft -= pageHeight;
+
+      // Add subsequent pages if needed
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeightPx;
+        pdf.addPage();
         pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeightPx);
         heightLeft -= pageHeight;
-
-        // Add subsequent pages if needed
-        while (heightLeft > 0) {
-          position = heightLeft - imgHeightPx;
-          pdf.addPage();
-          pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeightPx);
-          heightLeft -= pageHeight;
-        }
-
-        const pdfBlob = pdf.output('blob');
-        const file = new File([pdfBlob], `Hop_Dong_${bookingToShare.customerName.replace(/ /g, '_')}.pdf`, { type: 'application/pdf' });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: 'Hợp Đồng Thuê Xe',
-            text: `Gửi anh/chị bản điện tử Hợp đồng thuê xe.`,
-            files: [file]
-          });
-        } else {
-          // Fallback if Web Share is not supported for files (e.g. desktop)
-          const url = URL.createObjectURL(pdfBlob);
-          window.open(`https://zalo.me/?text=${encodeURIComponent(`Anh/chị truy cập link để tải hợp đồng: ${bookingToShare.contractUrl || ''}`)}`, '_blank');
-
-          // Also trigger a normal download as a fallback
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = file.name;
-          a.click();
-          URL.revokeObjectURL(url);
-        }
-      } catch (error) {
-        console.error('Lỗi tạo PDF:', error);
-        alert('Có lỗi xảy ra khi tạo PDF. Vui lòng thử lại.');
-      } finally {
-        setIsGeneratingPDF(false);
-        setPrintingBooking(null); // Hide print view again
       }
-    }, 800);
+
+      const pdfBlob = pdf.output('blob');
+      const file = new File([pdfBlob], `Hop_Dong_${bookingToShare.customerName.replace(/ /g, '_')}.pdf`, { type: 'application/pdf' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Hợp Đồng Thuê Xe',
+          text: `Gửi anh/chị bản điện tử Hợp đồng thuê xe.`,
+          files: [file]
+        });
+      } else {
+        // Fallback if Web Share is not supported for files (e.g. desktop)
+        const url = URL.createObjectURL(pdfBlob);
+        window.open(`https://zalo.me/?text=${encodeURIComponent(`Anh/chị truy cập link để tải hợp đồng: ${bookingToShare.contractUrl || ''}`)}`, '_blank');
+
+        // Also trigger a normal download as a fallback
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error('Lỗi tạo PDF:', error);
+      alert('Có lỗi xảy ra khi tạo PDF. Vui lòng thử lại.');
+    } finally {
+      setIsGeneratingPDF(false);
+      setPdfBooking(null);
+    }
   };
 
 
@@ -763,6 +765,21 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
             <ContractPreview
               booking={printingBooking}
               car={cars.find(c => c.id === printingBooking.carId)}
+              lessorData={lessorData}
+            />
+          </div>
+        </div>
+      )}
+      {/* Offscreen render for PDF capture */}
+      {pdfBooking && (
+        <div
+          style={{ position: 'fixed', left: '-10000px', top: 0, width: '794px', backgroundColor: '#ffffff' }}
+          aria-hidden="true"
+        >
+          <div ref={pdfContractRef}>
+            <ContractPreview
+              booking={pdfBooking}
+              car={cars.find(c => c.id === pdfBooking.carId)}
               lessorData={lessorData}
             />
           </div>

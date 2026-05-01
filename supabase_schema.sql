@@ -49,6 +49,7 @@ create table if not exists public.bookings (
     customer_cccd_date text,
     customer_cccd_place text,
     customer_address text,
+    customer_temp_address text,
     customer_license_class text,
     customer_license_number text,
     customer_license_expiry text,

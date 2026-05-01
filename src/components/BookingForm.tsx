@@ -42,6 +42,7 @@ export function BookingForm({ cars, bookings = [], onSave, onCancel, initialData
     customerCccdDate: '',
     customerCccdPlace: 'Cục Cảnh sát QLHC về TTXH',
     customerAddress: '',
+    customerTempAddress: '',
     customerLicenseClass: 'B2',
     customerLicenseNumber: '',
     customerLicenseExpiry: '',

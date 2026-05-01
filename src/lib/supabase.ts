@@ -56,6 +56,7 @@ export function mapDbToBooking(dbBooking: any): any {
         customerCccdDate: dbBooking.customer_cccd_date,
         customerCccdPlace: dbBooking.customer_cccd_place,
         customerAddress: dbBooking.customer_address,
+        customerTempAddress: dbBooking.customer_temp_address,
         customerLicenseClass: dbBooking.customer_license_class,
         customerLicenseNumber: dbBooking.customer_license_number,
         customerLicenseExpiry: dbBooking.customer_license_expiry,
@@ -99,6 +100,7 @@ export function mapBookingToDb(booking: any): any {
     if (booking.customerCccdDate !== undefined) dbBooking.customer_cccd_date = booking.customerCccdDate;
     if (booking.customerCccdPlace !== undefined) dbBooking.customer_cccd_place = booking.customerCccdPlace;
     if (booking.customerAddress !== undefined) dbBooking.customer_address = booking.customerAddress;
+    if (booking.customerTempAddress !== undefined) dbBooking.customer_temp_address = booking.customerTempAddress;
     if (booking.customerLicenseClass !== undefined) dbBooking.customer_license_class = booking.customerLicenseClass;
     if (booking.customerLicenseNumber !== undefined) dbBooking.customer_license_number = booking.customerLicenseNumber;
     if (booking.customerLicenseExpiry !== undefined) dbBooking.customer_license_expiry = booking.customerLicenseExpiry;
