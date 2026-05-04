@@ -1,6 +1,6 @@
 import { useState, useEffect, FormEvent, useRef, useMemo } from 'react';
 import { Booking, Car } from '../data/mock';
-import { X, Printer, Save, Upload, Loader2, Users, Search, ChevronDown } from 'lucide-react';
+import { X, Printer, Save, Upload, Loader2, Users, Search, ChevronDown, ClipboardCheck } from 'lucide-react';
 import { ContractPreview } from './ContractPreview';
 import { supabase } from '../lib/supabase';
 import html2canvas from 'html2canvas';
@@ -74,13 +74,32 @@ export function BookingForm({ cars, bookings = [], onSave, onCancel, initialData
 
   // Extract unique past customers from bookings (keyed by CCCD or phone)
   const pastCustomers = useMemo(() => {
-    const map = new Map<string, Partial<Booking>>();
-    bookings.forEach(b => {
+    const map = new Map<string, Booking>();
+    
+    // Sắp xếp đơn thuê theo thời gian giảm dần để lấy thông tin mới nhất trước
+    const sortedBookings = [...bookings].sort((a, b) => 
+      new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+    );
+
+    sortedBookings.forEach(b => {
       const key = b.customerCCCD || b.customerPhone || '';
       if (!key) return;
-      // Keep the most recent entry for each customer
+      
       if (!map.has(key)) {
-        map.set(key, b);
+        // Lưu bản sao của đơn thuê mới nhất
+        map.set(key, { ...b });
+      } else {
+        const existing = map.get(key)!;
+        // Bổ sung các ảnh chứng từ nếu bản ghi mới nhất bị thiếu nhưng bản ghi cũ hơn lại có
+        if (!existing.customerIdFront && b.customerIdFront) existing.customerIdFront = b.customerIdFront;
+        if (!existing.customerIdBack && b.customerIdBack) existing.customerIdBack = b.customerIdBack;
+        if (!existing.customerLicenseFront) existing.customerLicenseFront = b.customerLicenseFront;
+        if (!existing.customerLicenseBack) existing.customerLicenseBack = b.customerLicenseBack;
+        
+        // Bổ sung các thông tin khác nếu cần
+        if (!existing.customerAddress && b.customerAddress) existing.customerAddress = b.customerAddress;
+        if (!existing.customerTempAddress && b.customerTempAddress) existing.customerTempAddress = b.customerTempAddress;
+        if (!existing.customerYearOfBirth && b.customerYearOfBirth) existing.customerYearOfBirth = b.customerYearOfBirth;
       }
     });
     return Array.from(map.values());
@@ -110,7 +129,13 @@ export function BookingForm({ cars, bookings = [], onSave, onCancel, initialData
       customerLicenseClass: customer.customerLicenseClass || prev.customerLicenseClass,
       customerLicenseNumber: customer.customerLicenseNumber || prev.customerLicenseNumber,
       customerLicenseExpiry: customer.customerLicenseExpiry || prev.customerLicenseExpiry,
+      // Tự động chọn luôn các chứng từ đính kèm
+      customerIdFront: customer.customerIdFront || prev.customerIdFront,
+      customerIdBack: customer.customerIdBack || prev.customerIdBack,
+      customerLicenseFront: customer.customerLicenseFront || prev.customerLicenseFront,
+      customerLicenseBack: customer.customerLicenseBack || prev.customerLicenseBack,
     }));
+    setIdFiles({}); // Xóa các tệp đang chọn thủ công để ưu tiên dùng ảnh cũ của khách
     setShowCustomerPicker(false);
     setCustomerSearch('');
   };
@@ -365,6 +390,11 @@ export function BookingForm({ cars, bookings = [], onSave, onCancel, initialData
                                     <p className="text-xs text-slate-500 truncate">
                                       {customer.customerPhone}
                                       {customer.customerCCCD && <span className="ml-2 text-slate-400">• CCCD: {customer.customerCCCD}</span>}
+                                      {(customer.customerIdFront || customer.customerLicenseFront) && (
+                                        <span className="ml-2 text-emerald-500 font-medium flex-inline items-center gap-0.5">
+                                          <ClipboardCheck size={10} className="inline mb-0.5" /> ✓ Có ảnh
+                                        </span>
+                                      )}
                                     </p>
                                   </div>
                                   <span className="text-xs text-indigo-500 font-medium opacity-0 group-hover:opacity-100 transition-opacity shrink-0">Chọn</span>
