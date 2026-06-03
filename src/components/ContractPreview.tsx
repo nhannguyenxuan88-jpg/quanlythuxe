@@ -114,6 +114,15 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   };
 
+  const formatDeposit = (value?: string) => {
+    if (!value) return '......................';
+    const digits = value.replace(/[^\d]/g, '');
+    if (!digits) return value;
+    const num = Number(digits);
+    if (!Number.isFinite(num)) return value;
+    return formatCurrency(num);
+  };
+
   return (
     <div ref={ref} className="p-4 sm:p-8 max-w-4xl mx-auto print:p-0 print:m-0 text-sm leading-relaxed" style={{ fontFamily: '"Times New Roman", Times, serif', backgroundColor: '#ffffff', color: '#000000' }}>
       <div className="text-center mb-4 relative">
@@ -211,6 +220,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
         {/* ĐIỀU 4 */}
         <div className="font-bold mt-6 uppercase">ĐIỀU 4: THẾ CHẤP TÀI SẢN</div>
         <p>Khi Bên B thuê xe của Bên A phải thực hiện việc thế chấp tài sản cho Bên A, cụ thể như sau:</p>
+        <p className="pl-4 mt-2">- Tài sản cọc thế chấp: <strong>{formatDeposit(booking.depositAmount)}</strong></p>
         {coreClauses.dieu4.split('\n').filter(line => line.trim()).map((line, i) => (
           <div key={i} className="pl-4 mt-2"><p>{line}</p></div>
         ))}
