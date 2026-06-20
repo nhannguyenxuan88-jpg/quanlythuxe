@@ -60,6 +60,7 @@ export function BookingForm({ cars, bookings = [], onSave, onCancel, initialData
     endDate: toDatetimeLocal(new Date(Date.now() + 86400000).toString()),
     status: 'active',
     totalAmount: 0,
+    paidAmount: 0,
   });
 
   const [idFiles, setIdFiles] = useState<{ front?: File; back?: File; licenseFront?: File; licenseBack?: File }>({});
@@ -851,7 +852,7 @@ export function BookingForm({ cars, bookings = [], onSave, onCancel, initialData
                 </div>
 
                 {/* Giá thuê linh hoạt */}
-                <div className="pb-4">
+                <div className="pb-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Giá thuê (VNĐ)</label>
                   <div className="relative">
                     <input
@@ -893,6 +894,43 @@ export function BookingForm({ cars, bookings = [], onSave, onCancel, initialData
                     }
                   </p>
                 </div>
+
+                {/* Số tiền đã thanh toán & Còn lại */}
+                <div className="pb-4 space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Số tiền đã thanh toán (VNĐ)</label>
+                    <input
+                      type="text"
+                      value={formData.paidAmount ? new Intl.NumberFormat('vi-VN').format(formData.paidAmount) : ''}
+                      onChange={e => {
+                        const rawValue = e.target.value.replace(/[^\d]/g, '');
+                        setFormData({ ...formData, paidAmount: rawValue ? Number(rawValue) : 0 });
+                      }}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                      placeholder="Nhập số tiền khách đã trả..."
+                    />
+                  </div>
+                  {/* Hiển thị số tiền còn lại */}
+                  {((formData.totalAmount || 0) > 0) && (
+                    <div className={`flex items-center justify-between px-3 py-2 rounded-lg border ${
+                      (formData.totalAmount || 0) - (formData.paidAmount || 0) <= 0
+                        ? 'bg-emerald-50 border-emerald-200'
+                        : 'bg-amber-50 border-amber-200'
+                    }`}>
+                      <span className="text-sm font-medium text-slate-600">Còn lại cần thanh toán:</span>
+                      <span className={`text-base font-bold ${
+                        (formData.totalAmount || 0) - (formData.paidAmount || 0) <= 0
+                          ? 'text-emerald-600'
+                          : 'text-amber-600'
+                      }`}>
+                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                          Math.max(0, (formData.totalAmount || 0) - (formData.paidAmount || 0))
+                        )}
+                        {(formData.totalAmount || 0) - (formData.paidAmount || 0) <= 0 && ' ✓'}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </form>
             </div>
           </div>
@@ -908,11 +946,30 @@ export function BookingForm({ cars, bookings = [], onSave, onCancel, initialData
         <div className="bg-white border-t border-slate-100 p-4 shrink-0 pb-safe print:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-4 items-center justify-between">
             {/* Price Summary */}
-            <div className="flex justify-between items-center w-full md:w-auto bg-indigo-50/50 px-4 py-2 rounded-xl border border-indigo-100 flex-1 md:flex-none">
-              <span className="text-slate-700 font-medium text-sm mr-4">Tổng tiền dự kiến:</span>
-              <span className="text-xl font-bold text-indigo-600">
-                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(formData.totalAmount || 0)}
-              </span>
+            <div className="flex flex-col gap-1 w-full md:w-auto bg-indigo-50/50 px-4 py-2.5 rounded-xl border border-indigo-100 flex-1 md:flex-none">
+              <div className="flex justify-between items-center gap-6">
+                <span className="text-slate-500 text-xs">Tổng tiền:</span>
+                <span className="text-base font-bold text-indigo-600">
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(formData.totalAmount || 0)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center gap-6">
+                <span className="text-slate-500 text-xs">Đã thanh toán:</span>
+                <span className="text-base font-semibold text-emerald-600">
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(formData.paidAmount || 0)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center gap-6 border-t border-indigo-100 pt-1">
+                <span className="text-slate-700 font-semibold text-xs">Còn lại:</span>
+                <span className={`text-base font-bold ${
+                  (formData.totalAmount || 0) - (formData.paidAmount || 0) <= 0 ? 'text-emerald-600' : 'text-amber-600'
+                }`}>
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                    Math.max(0, (formData.totalAmount || 0) - (formData.paidAmount || 0))
+                  )}
+                  {(formData.totalAmount || 0) - (formData.paidAmount || 0) <= 0 && (formData.totalAmount || 0) > 0 && ' ✓'}
+                </span>
+              </div>
             </div>
 
             {/* Action Buttons */}

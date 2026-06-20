@@ -21,6 +21,7 @@ interface BookingListProps {
 export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onDeleteBooking }: BookingListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all');
+  const [paymentFilter, setPaymentFilter] = useState<'all' | 'unpaid' | 'paid'>('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [isAdding, setIsAdding] = useState(false);
@@ -45,6 +46,10 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
     })();
   }, []);
 
+  // Đơn 'completed' → luôn coi là đã thanh toán đủ
+  const getEffectivePaid = (b: Booking) =>
+    b.status === 'completed' ? b.totalAmount : (b.paidAmount || 0);
+
   const filteredBookings = bookings.filter(booking => {
     const car = cars.find(c => c.id === booking.carId);
     const matchesSearch = booking.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -53,6 +58,13 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
         car.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
         car.model.toLowerCase().includes(searchTerm.toLowerCase())));
     const matchesStatus = statusFilter === 'all' || booking.status === statusFilter;
+
+    // Payment filter
+    const remaining = booking.totalAmount - getEffectivePaid(booking);
+    const matchesPayment =
+      paymentFilter === 'all' ||
+      (paymentFilter === 'unpaid' && remaining > 0) ||
+      (paymentFilter === 'paid' && remaining <= 0);
 
     // Date range filter
     let matchesDate = true;
@@ -65,8 +77,14 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
       matchesDate = matchesDate && new Date(booking.startDate) <= toEnd;
     }
 
-    return matchesSearch && matchesStatus && matchesDate;
+    return matchesSearch && matchesStatus && matchesPayment && matchesDate;
   });
+
+  // Summary stats
+  const totalDebt = filteredBookings.reduce((sum, b) => sum + Math.max(0, b.totalAmount - getEffectivePaid(b)), 0);
+  const totalPaid = filteredBookings.reduce((sum, b) => sum + getEffectivePaid(b), 0);
+  const totalRevenue = filteredBookings.reduce((sum, b) => sum + b.totalAmount, 0);
+  const unpaidCount = filteredBookings.filter(b => (b.totalAmount - getEffectivePaid(b)) > 0).length;
 
   const getStatusColor = (status: BookingStatus) => {
     switch (status) {
@@ -234,6 +252,37 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
         </div>
       </div>
 
+      {/* Payment Summary Bar */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 print:hidden">
+        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 font-medium mb-1">Tổng doanh thu</p>
+          <p className="text-lg font-bold text-slate-800">{formatCurrency(totalRevenue)}</p>
+          <p className="text-xs text-slate-400 mt-1">{filteredBookings.length} đơn</p>
+        </div>
+        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 font-medium mb-1">Đã thu</p>
+          <p className="text-lg font-bold text-emerald-600">{formatCurrency(totalPaid)}</p>
+          <p className="text-xs text-slate-400 mt-1">{filteredBookings.length - unpaidCount} đơn đủ</p>
+        </div>
+        <div className={`rounded-2xl p-4 border shadow-sm ${unpaidCount > 0 ? 'bg-amber-50 border-amber-100' : 'bg-white border-slate-100'}`}>
+          <p className="text-xs text-slate-500 font-medium mb-1">Còn nợ</p>
+          <p className={`text-lg font-bold ${unpaidCount > 0 ? 'text-amber-600' : 'text-slate-400'}`}>{formatCurrency(totalDebt)}</p>
+          <p className="text-xs text-slate-400 mt-1">{unpaidCount} đơn chưa đủ</p>
+        </div>
+        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
+          <p className="text-xs text-slate-500 font-medium mb-1">Tỉ lệ thu</p>
+          <p className="text-lg font-bold text-indigo-600">
+            {totalRevenue > 0 ? Math.round((totalPaid / totalRevenue) * 100) : 0}%
+          </p>
+          <div className="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-indigo-500 rounded-full transition-all"
+              style={{ width: `${totalRevenue > 0 ? Math.round((totalPaid / totalRevenue) * 100) : 0}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden print:hidden">
         <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
@@ -257,6 +306,22 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
               <option value="active">Đang chạy</option>
               <option value="completed">Hoàn thành</option>
               <option value="cancelled">Đã hủy</option>
+            </select>
+          </div>
+
+          <div className="relative">
+            <select
+              value={paymentFilter}
+              onChange={(e) => setPaymentFilter(e.target.value as 'all' | 'unpaid' | 'paid')}
+              className={`pl-3 pr-8 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent appearance-none ${
+                paymentFilter === 'unpaid' ? 'border-amber-300 bg-amber-50 text-amber-700 font-medium' :
+                paymentFilter === 'paid' ? 'border-emerald-300 bg-emerald-50 text-emerald-700 font-medium' :
+                'border-slate-200 bg-white'
+              }`}
+            >
+              <option value="all">💳 Tất cả thanh toán</option>
+              <option value="unpaid">⚠️ Chưa thu đủ</option>
+              <option value="paid">✅ Đã thu đủ</option>
             </select>
           </div>
 
@@ -287,7 +352,7 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                 <th className="p-4 font-medium">Khách hàng</th>
                 <th className="p-4 font-medium">Xe thuê</th>
                 <th className="p-4 font-medium">Thời gian</th>
-                <th className="p-4 font-medium">Tổng tiền</th>
+                <th className="p-4 font-medium">Thanh toán</th>
                 <th className="p-4 font-medium">Trạng thái</th>
                 <th className="p-4 font-medium text-right">Thao tác</th>
               </tr>
@@ -332,7 +397,29 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                         </div>
                       </div>
                     </td>
-                    <td className="p-4 font-medium text-slate-900">{formatCurrency(booking.totalAmount)}</td>
+                    <td className="p-4">
+                      <div className="space-y-1 min-w-[140px]">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-xs text-slate-400 shrink-0">Tổng:</span>
+                          <span className="font-semibold text-slate-800 text-sm">{formatCurrency(booking.totalAmount)}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-xs text-slate-400 shrink-0">Đã TT:</span>
+                          <span className="text-sm font-medium text-emerald-600">{formatCurrency(booking.paidAmount || 0)}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-1">
+                          <span className="text-xs font-medium text-slate-500 shrink-0">Còn lại:</span>
+                          {(booking.totalAmount - (booking.paidAmount || 0)) <= 0 ? (
+                            <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                              <span className="inline-flex items-center justify-center w-4 h-4 bg-emerald-100 rounded-full text-[10px]">✓</span>
+                              Đủ
+                            </span>
+                          ) : (
+                            <span className="text-sm font-bold text-amber-600">{formatCurrency(booking.totalAmount - (booking.paidAmount || 0))}</span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
                     <td className="p-4">
                       <select
                         value={booking.status}
@@ -479,12 +566,29 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                   </div>
 
                   <div className="flex flex-col gap-3 pt-3 border-t border-slate-100">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-slate-500 font-medium">Tổng ({days} ngày)</p>
-                        <p className="font-bold text-indigo-600 text-lg leading-tight mt-0.5">{formatCurrency(booking.totalAmount)}</p>
+                    {/* Payment Summary */}
+                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-500">Tổng tiền ({days} ngày)</span>
+                        <span className="font-bold text-slate-800 text-sm">{formatCurrency(booking.totalAmount)}</span>
                       </div>
-                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-500">Đã thanh toán</span>
+                        <span className="font-semibold text-emerald-600 text-sm">{formatCurrency(booking.paidAmount || 0)}</span>
+                      </div>
+                      <div className="flex items-center justify-between border-t border-slate-200 pt-2">
+                        <span className="text-xs font-semibold text-slate-600">Còn lại</span>
+                        {(booking.totalAmount - (booking.paidAmount || 0)) <= 0 ? (
+                          <span className="font-bold text-emerald-600 text-sm flex items-center gap-1.5">
+                            <span className="inline-flex items-center justify-center w-5 h-5 bg-emerald-100 rounded-full text-xs">✓</span>
+                            Đủ
+                          </span>
+                        ) : (
+                          <span className="font-bold text-amber-600 text-base">{formatCurrency(booking.totalAmount - (booking.paidAmount || 0))}</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
                         {hasDocs && (
                           <button
                             onClick={() => setViewingDocuments(booking)}
@@ -513,7 +617,6 @@ export function BookingList({ bookings, cars, onAddBooking, onUpdateBooking, onD
                           <Trash2 size={18} />
                         </button>
                       </div>
-                    </div>
 
                     {/* Mobile Handover Buttons */}
                     <div className="flex flex-col gap-2">

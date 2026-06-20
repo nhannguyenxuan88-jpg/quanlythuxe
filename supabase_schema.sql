@@ -81,6 +81,7 @@ create table if not exists public.bookings (
     start_date timestamp with time zone not null,
     end_date timestamp with time zone not null,
     total_amount numeric not null,
+    paid_amount numeric default 0,  -- Số tiền đã thanh toán
     status public.booking_status default 'active'::public.booking_status not null,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null,
     updated_at timestamp with time zone default timezone('utc'::text, now()) not null

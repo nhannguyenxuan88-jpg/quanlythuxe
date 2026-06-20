@@ -68,6 +68,7 @@ export function mapDbToBooking(dbBooking: any): any {
         startDate: dbBooking.start_date,
         endDate: dbBooking.end_date,
         totalAmount: dbBooking.total_amount,
+        paidAmount: dbBooking.paid_amount ?? 0,
         status: dbBooking.status,
         customerIdFront: dbBooking.customer_id_front,
         customerIdBack: dbBooking.customer_id_back,
@@ -112,6 +113,7 @@ export function mapBookingToDb(booking: any): any {
     if (booking.startDate !== undefined) dbBooking.start_date = booking.startDate;
     if (booking.endDate !== undefined) dbBooking.end_date = booking.endDate;
     if (booking.totalAmount !== undefined) dbBooking.total_amount = booking.totalAmount;
+    if (booking.paidAmount !== undefined) dbBooking.paid_amount = booking.paidAmount;
     if (booking.status !== undefined) dbBooking.status = booking.status;
 
     // Documents

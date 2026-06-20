@@ -64,6 +64,7 @@ export interface Booking {
   startDate: string;
   endDate: string;
   totalAmount: number;
+  paidAmount?: number;   // Số tiền đã thanh toán
   status: BookingStatus;
 }
 
