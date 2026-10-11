@@ -94,7 +94,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
 
   const handleEndDrawing = () => {
     if (signatureRef.current) {
-      setSignatureData(signatureRef.current.getTrimmedCanvas().toDataURL('image/png'));
+      setSignatureData(signatureRef.current.getCanvas().toDataURL('image/png'));
     }
   };
 
@@ -105,7 +105,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
 
   const handleEndLessorDrawing = () => {
     if (lessorSignatureRef.current) {
-      setLessorSignatureData(lessorSignatureRef.current.getTrimmedCanvas().toDataURL('image/png'));
+      setLessorSignatureData(lessorSignatureRef.current.getCanvas().toDataURL('image/png'));
     }
   };
 
@@ -308,7 +308,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
             </div>
             {/* When printing or has signature data, show the signed image to ensure print compatibility */}
             {lessorSignatureData && (
-              <img src={lessorSignatureData} alt="Lessor Signature" className="absolute select-none pointer-events-none w-full h-full object-contain drop-shadow-sm opacity-0 print:opacity-100" />
+              <img src={lessorSignatureData} alt="Lessor Signature" className="absolute select-none pointer-events-none w-full h-full object-contain drop-shadow-sm z-10" />
             )}
             {!lessorSignatureData && <span className="absolute select-none pointer-events-none text-xs print:hidden" style={{ color: '#d1d5db' }}>(Chủ xe ký tại đây)</span>}
           </div>
@@ -340,7 +340,7 @@ export const ContractPreview = forwardRef<HTMLDivElement, ContractPreviewProps>(
             </div>
             {/* When printing or has signature data, show the signed image to ensure print compatibility */}
             {signatureData && (
-              <img src={signatureData} alt="Client Signature" className="absolute select-none pointer-events-none w-full h-full object-contain drop-shadow-sm opacity-0 print:opacity-100" />
+              <img src={signatureData} alt="Client Signature" className="absolute select-none pointer-events-none w-full h-full object-contain drop-shadow-sm z-10" />
             )}
             {!signatureData && <span className="absolute select-none pointer-events-none text-xs print:hidden" style={{ color: '#d1d5db' }}>(Khách hàng ký tại đây)</span>}
           </div>

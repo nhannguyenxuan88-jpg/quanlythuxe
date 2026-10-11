@@ -1,0 +1,34 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    # Chạy tự động mỗi ngày lúc 00:00 UTC (07:00 sáng giờ VN)
+    - cron: '0 0 * * *'
+  # Cho phép bấm nút "Run workflow" thủ công trên GitHub Actions để kiểm tra bất kỳ lúc nào
+  workflow_dispatch:
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Database
+        env:
+          # Tự động lấy từ Secrets nếu có, nếu chưa cài secret thì dùng trực tiếp thông tin project
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://cilrlqakogxfydigdqxs.supabase.co' }}
+          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpbHJscWFrb2d4ZnlkaWdkcXhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MjA1NTUsImV4cCI6MjA4ODM5NjU1NX0.3hs4hVTxsN4rXt8b73kS7bnb0WD4zXo4UqwZKdFqifw' }}
+        run: |
+          TARGET_URL="${SUPABASE_URL%/}/rest/v1/cars?select=id&limit=1"
+
+          echo "🚀 Đang gửi ping kiểm tra tới Supabase..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            "$TARGET_URL")
+
+          echo "Status Code nhận được: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 400 ]; then
+            echo "✅ Ping Supabase thành công! Database vẫn đang hoạt động bình thường, không bị tạm dừng."
+          else
+            echo "⚠️ Lỗi khi ping Supabase (HTTP status: $HTTP_STATUS)."
+            exit 1
+          fi
